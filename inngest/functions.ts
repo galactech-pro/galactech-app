@@ -5,7 +5,7 @@ import { campaignSend } from "./campaign-send";
 import { reconcile } from "./reconcile";
 import { automationEngine, dispatchNewContact, dispatchTagAdded, dispatchScoreChanged, dispatchReply } from "./automation-engine";
 
-import { kbAutoReply, kbResync } from "./knowledge";
+import { kbAutoReply, kbResync, mailboxPoll } from "./knowledge";
 
 export { inngest } from "@/lib/inngest";
 
@@ -31,4 +31,5 @@ export const functions = [
   dispatchReply,
   kbAutoReply,
   kbResync,
+  mailboxPoll,
 ];

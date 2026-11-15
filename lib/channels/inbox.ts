@@ -35,7 +35,7 @@ export async function loadInbox(orgId: string, inboxId: string): Promise<InboxCt
 
 const newToken = () => randomBytes(24).toString("hex");
 
-async function createInbox(orgId: string, data: { channel: channel; provider: string; name: string; identifier: string; config: Record<string, unknown> }) {
+export async function createInbox(orgId: string, data: { channel: channel; provider: string; name: string; identifier: string; config: Record<string, unknown> }) {
   try {
     return await prisma.inboxes.create({
       data: { org_id: orgId, channel: data.channel, provider: data.provider, name: data.name, identifier: data.identifier, config: encrypt(JSON.stringify(data.config)), webhook_token: newToken() },
@@ -95,7 +95,11 @@ export async function resolveOutboundInbox(orgId: string, ch: channel, inboxId?:
     return ib;
   }
   if (ch === "whatsapp") return ensureWhatsappInbox(orgId);
-  if (ch === "email") return ensureEmailInbox(orgId);
+  if (ch === "email") {
+    // A connected customer mailbox (IMAP/SMTP) is the preferred sender: mail goes out from THEIR address
+    const own = await prisma.inboxes.findFirst({ where: { org_id: orgId, channel: "email", provider: "imap", is_active: true }, orderBy: { created_at: "asc" } });
+    return own ? toInboxCtx(own) : ensureEmailInbox(orgId);
+  }
   if (ch === "voice") return ensureVoiceInbox(orgId);
   const row = await prisma.inboxes.findFirst({ where: { org_id: orgId, channel: ch, is_active: true }, orderBy: { created_at: "asc" } });
   if (!row) throw new ApiError(400, `${ch} is not connected`);

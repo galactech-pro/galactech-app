@@ -2,6 +2,7 @@ import { inngest, type Events } from "@/lib/inngest";
 import { prisma } from "@/lib/db";
 import { autoReplyToMessage } from "@/lib/knowledge/reply";
 import { syncSource } from "@/lib/knowledge";
+import { pollMailbox } from "@/lib/mailbox/imap";
 
 /** Every inbound customer message: answer from the knowledge base (draft or auto, per org setting). Never throws on AI trouble. */
 export const kbAutoReply = inngest.createFunction(
@@ -43,4 +44,26 @@ export const kbResync = inngest.createFunction({ id: "kb-resync", retries: 0 }, 
     });
   }
   return { due: due.length, ok };
+});
+
+/** Every 3 minutes: pull new mail from each customer mailbox connected over IMAP into the inbox. */
+export const mailboxPoll = inngest.createFunction({ id: "mailbox-poll", retries: 0, concurrency: { limit: 1 } }, { cron: "*/3 * * * *" }, async ({ step }) => {
+  const ids = await step.run("find-mailboxes", async () => {
+    const rows = await prisma.inboxes.findMany({ where: { channel: "email", provider: "imap", is_active: true }, select: { id: true }, take: 100 }); // tenant-ok: system job over all orgs
+    return rows.map((r) => r.id);
+  });
+  let imported = 0;
+  for (const id of ids) {
+    imported += await step.run(`poll-${id}`, async () => {
+      try {
+        const row = await prisma.inboxes.findUnique({ where: { id } }); // tenant-ok: system job, org comes from the row
+        if (!row || !row.is_active) return 0;
+        return (await pollMailbox(row)).imported;
+      } catch (e) {
+        console.error("[mailbox-poll]", id, e);
+        return 0;
+      }
+    });
+  }
+  return { mailboxes: ids.length, imported };
 });

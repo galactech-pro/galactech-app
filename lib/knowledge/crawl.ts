@@ -17,7 +17,7 @@ function privateIpv4(ip: string): boolean {
   );
 }
 
-function privateIp(ip: string): boolean {
+export function privateIp(ip: string): boolean {
   if (ip.includes(".") && !ip.includes(":")) return privateIpv4(ip);
   const v = ip.toLowerCase();
   const mapped = v.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/);

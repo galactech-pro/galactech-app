@@ -31,6 +31,17 @@ function rewriteLinks(html: string, token: string): string {
   });
 }
 
+/** Unsubscribe footer, click tracking and open pixel, shared by every email adapter (Resend and the customer's own SMTP). */
+export function decorateEmailHtml(rawHtml: string, contactId: string, messageId: string): { html: string; unsubUrl: string } {
+  const unsubUrl = `${appUrl()}/api/email/unsubscribe?t=${unsubscribeToken(contactId)}`;
+  const token = trackingToken(messageId);
+  let html = rewriteLinks(rawHtml, token);
+  const foot = `<p style="font-size:12px;color:#8a8a8a;text-align:center;margin:0;padding:0 12px 28px;background:#000000;font-family:Inter,Arial,sans-serif">Don't want these emails? <a href="${unsubUrl}" style="color:#cccccc;text-decoration:underline">Unsubscribe</a></p>`;
+  html = /<\/body>/i.test(html) ? html.replace(/<\/body>/i, foot + "</body>") : html + foot;
+  html += `<img src="${appUrl()}/api/email/track/open?t=${token}" width="1" height="1" alt="" style="display:none" />`;
+  return { html, unsubUrl };
+}
+
 /** Email via Resend (HTTP API, no SDK). Inbound arrives through /api/webhooks/email (Resend Receiving); delivery/bounce status webhooks are not wired. */
 export const resendEmailAdapter: ChannelAdapter = {
   channel: "email",
@@ -57,12 +68,7 @@ export const resendEmailAdapter: ChannelAdapter = {
   async send(inbox, msg) {
     if (msg.content.kind !== "email") throw new ChannelError("UNSUPPORTED_CONTENT", "Email adapter only sends email content");
     const key = await resendKey(inbox);
-    const unsubUrl = `${appUrl()}/api/email/unsubscribe?t=${unsubscribeToken(msg.contactId)}`;
-    const token = trackingToken(msg.messageId);
-    let html = rewriteLinks(msg.content.html, token);
-    const foot = `<p style="font-size:12px;color:#8a8a8a;text-align:center;margin:0;padding:0 12px 28px;background:#000000;font-family:Inter,Arial,sans-serif">Don't want these emails? <a href="${unsubUrl}" style="color:#cccccc;text-decoration:underline">Unsubscribe</a></p>`;
-    html = /<\/body>/i.test(html) ? html.replace(/<\/body>/i, foot + "</body>") : html + foot;
-    html += `<img src="${appUrl()}/api/email/track/open?t=${token}" width="1" height="1" alt="" style="display:none" />`;
+    const { html, unsubUrl } = decorateEmailHtml(msg.content.html, msg.contactId, msg.messageId);
 
     // Replies to this email come back to the dashboard through Resend Receiving
     const tokRow = await prisma.inboxes.findFirst({ where: { id: inbox.id, org_id: inbox.org_id }, select: { webhook_token: true } });

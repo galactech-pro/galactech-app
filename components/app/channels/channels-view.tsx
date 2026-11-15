@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { PageHeader } from "@/components/app/page-header";
 import { ConfirmDialog } from "@/components/app/settings/confirm-dialog";
 import { CopyButton } from "@/components/app/settings/connections-tab";
+import { MailboxCard } from "@/components/app/channels/mailbox-card";
 import { ChannelIcon } from "@/components/app/campaigns/channel-icon";
 import type { Channel } from "@/components/app/campaigns/types";
 import { api } from "@/lib/fetcher";
@@ -183,6 +184,7 @@ export function ChannelsView() {
                     <p className="text-xs text-muted-foreground">Receiving is not set up yet. An administrator needs to set INBOUND_EMAIL_DOMAIN and RESEND_WEBHOOK_SECRET (see docs/DEPLOY.md).</p>
                   )
                 ) : null}
+                {p.c === "email" ? <MailboxCard /> : null}
                 {p.c === "email" ? null : <Button asChild size="sm" variant="outline"><a href={p.c === "voice" ? "/voice" : "/settings"}>{p.ok ? "Manage" : "Set up"}</a></Button>}
               </CardContent>
             </Card>

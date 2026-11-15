@@ -1,6 +1,7 @@
 import type { ChannelAdapter, ChannelKind } from "./types";
 import { whatsappCloudAdapter } from "./adapters/whatsapp";
 import { resendEmailAdapter } from "./adapters/email";
+import { imapEmailAdapter } from "./adapters/email-imap";
 import { vapiVoiceAdapter } from "./adapters/voice";
 import { telegramAdapter } from "./adapters/telegram";
 import { messengerAdapter, instagramAdapter } from "./adapters/meta";
@@ -13,7 +14,7 @@ import { apiAdapter } from "./adapters/api";
  * See docs/CHANNELS.md.
  */
 const ADAPTERS: ChannelAdapter[] = [
-  whatsappCloudAdapter, resendEmailAdapter, vapiVoiceAdapter,
+  whatsappCloudAdapter, resendEmailAdapter, imapEmailAdapter, vapiVoiceAdapter,
   telegramAdapter, messengerAdapter, instagramAdapter, twilioSmsAdapter, webchatAdapter, apiAdapter,
 ];
 

@@ -18,6 +18,9 @@
     },
     "app/api/knowledge/**/route.ts": {
       "maxDuration": 60
+    },
+    "app/api/mailbox/**/route.ts": {
+      "maxDuration": 60
     }
   }
 }

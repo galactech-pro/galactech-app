@@ -45,9 +45,12 @@
     "@tanstack/react-query": "5.59.20",
     "class-variance-authority": "0.7.0",
     "clsx": "2.1.1",
+    "imapflow": "1.0.198",
     "inngest": "3.54.0",
     "lucide-react": "0.460.0",
+    "mailparser": "3.7.2",
     "next": "15.5.29",
+    "nodemailer": "6.9.16",
     "papaparse": "5.4.1",
     "razorpay": "2.9.5",
     "react": "19.0.0",
@@ -62,7 +65,9 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
+    "@types/mailparser": "3.4.5",
     "@types/node": "20.17.6",
+    "@types/nodemailer": "6.4.17",
     "@types/papaparse": "5.3.15",
     "@types/react": "19.0.2",
     "@types/react-dom": "19.0.2",
