@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { PageHeader } from "@/components/app/page-header";
 import { ConfirmDialog } from "@/components/app/settings/confirm-dialog";
 import { CopyButton } from "@/components/app/settings/connections-tab";
+import { InstallDialog } from "@/components/app/channels/install-dialog";
 import { MailboxCard } from "@/components/app/channels/mailbox-card";
 import { ChannelIcon } from "@/components/app/campaigns/channel-icon";
 import type { Channel } from "@/components/app/campaigns/types";
@@ -30,6 +31,8 @@ interface InboxRow {
   last_inbound_at: string | null;
   webhook_url: string | null;
   snippet: string | null;
+  chat_url?: string | null;
+  chat_token?: string | null;
   allowed_origins?: string[];
 }
 interface ListData { email_inbound: { address: string | null; configured: boolean }; inboxes: InboxRow[]; platform: { whatsapp: boolean; email: boolean; voice: boolean } }
@@ -214,6 +217,7 @@ export function ChannelsView() {
                       <p className="text-muted-foreground">Last inbound message: {fmt(r.last_inbound_at)}</p>
                       {r.is_active && r.webhook_url ? <div className="flex gap-2"><Input readOnly value={r.webhook_url} className="h-7 text-xs" aria-label="URL" /><CopyButton value={r.webhook_url} /></div> : null}
                       {r.is_active && r.snippet ? <div className="flex gap-2"><Input readOnly value={r.snippet} className="h-7 font-mono text-xs" aria-label="Widget snippet" /><CopyButton value={r.snippet} /></div> : null}
+                      {r.is_active && r.chat_url && r.snippet ? <InstallDialog inboxId={r.id} chatUrl={r.chat_url} snippet={r.snippet} token={r.chat_token ?? ""} /> : null}
                       {r.allowed_origins?.length ? <p className="text-muted-foreground">Origins: {r.allowed_origins.join(", ")}</p> : null}
                       {r.is_active ? <Button size="sm" variant="ghost" className="h-7 text-destructive" onClick={() => setDisc(r)}>Disconnect</Button> : null}
                     </div>

@@ -42,7 +42,13 @@ const nextConfig = {
   poweredByHeader: false,
   serverExternalPackages: ["@prisma/client"],
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    // /embed/* is the chat frame customers place on their own sites: it sets its own CSP frame-ancestors (the allowed websites)
+    // and must not carry X-Frame-Options: DENY or the global frame-ancestors 'none'.
+    const framable = securityHeaders.filter((h) => !["X-Frame-Options", "Content-Security-Policy", "Content-Security-Policy-Report-Only"].includes(h.key));
+    return [
+      { source: "/((?!embed/).*)", headers: securityHeaders },
+      { source: "/embed/:path*", headers: framable },
+    ];
   },
 };
 export default nextConfig;

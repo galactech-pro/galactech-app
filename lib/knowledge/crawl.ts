@@ -84,20 +84,90 @@ function decode(s: string): string {
     .replace(/&([a-z]+);/gi, (m, n: string) => ENTITIES[n.toLowerCase()] ?? m);
 }
 
-export function htmlToText(html: string): { title: string; text: string; links: string[] } {
-  const title = decode((html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] ?? "").replace(/\s+/g, " ").trim());
-  const links = [...html.matchAll(/<a\s[^>]*href\s*=\s*["']([^"'#]+)["']/gi)].map((m) => m[1]!);
-  const body = html
-    .replace(/<!--[\s\S]*?-->/g, " ")
-    .replace(/<(script|style|noscript|svg|template|iframe|nav|footer|header|form)[\s\S]*?<\/\1>/gi, " ")
-    .replace(/<(br|\/p|\/div|\/li|\/h[1-6]|\/tr|\/section|\/article)[^>]*>/gi, "\n")
-    .replace(/<[^>]+>/g, " ");
-  const text = decode(body)
+/** Flatten schema.org JSON-LD (LocalBusiness, Organization, Product, FAQ...) into plain fact lines. Works for JS-heavy sites too. */
+export function jsonLdFacts(html: string): string[] {
+  const out: string[] = [];
+  const push = (label: string, v: unknown) => {
+    if (typeof v === "string" || typeof v === "number") {
+      const t = String(v).replace(/\s+/g, " ").trim();
+      if (t) out.push(`${label}: ${t.slice(0, 400)}`);
+    }
+  };
+  const walk = (n: unknown, depth: number) => {
+    if (depth > 5 || !n) return;
+    if (Array.isArray(n)) {
+      n.slice(0, 40).forEach((x) => walk(x, depth + 1));
+      return;
+    }
+    if (typeof n !== "object") return;
+    const o = n as Record<string, unknown>;
+    const t = o["@type"];
+    const type = String(Array.isArray(t) ? t[0] : t ?? "");
+    if (type) {
+      push("Name", o.name);
+      push("About", o.description);
+      push("Phone", o.telephone);
+      push("Email", o.email);
+      push("Price range", o.priceRange);
+      const addr = o.address as Record<string, unknown> | string | undefined;
+      if (typeof addr === "string") push("Address", addr);
+      else if (addr && typeof addr === "object") push("Address", [addr.streetAddress, addr.addressLocality, addr.addressRegion, addr.postalCode, addr.addressCountry].filter(Boolean).join(", "));
+      const hours = o.openingHours;
+      push("Opening hours", Array.isArray(hours) ? hours.join("; ") : hours);
+      if (/Product|Service|Offer/i.test(type)) {
+        const offer = (o.offers ?? o) as Record<string, unknown>;
+        if (offer && (offer.price !== undefined || offer.lowPrice !== undefined)) push(`Price of ${String(o.name ?? "item")}`, `${offer.priceCurrency ?? ""} ${offer.price ?? offer.lowPrice}`.trim());
+      }
+      if (type === "Question") push(`FAQ ${String(o.name ?? "")}`, (o.acceptedAnswer as Record<string, unknown> | undefined)?.text);
+    }
+    for (const v of Object.values(o)) if (v && typeof v === "object") walk(v, depth + 1);
+  };
+  for (const m of html.matchAll(/<script[^>]+type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
+    try {
+      walk(JSON.parse(m[1]!.trim()), 0);
+    } catch {
+      /* invalid JSON-LD: ignore */
+    }
+  }
+  return [...new Set(out)].slice(0, 40);
+}
+
+/** Phone, email, WhatsApp and social links found anywhere in the page (header and footer included). */
+export function contactLinks(html: string): string[] {
+  const out = new Set<string>();
+  for (const m of html.matchAll(/href\s*=\s*["']([^"']+)["']/gi)) {
+    const h = decode(m[1]!.trim());
+    if (/^tel:/i.test(h)) out.add(`Phone: ${h.slice(4).trim()}`);
+    else if (/^mailto:/i.test(h)) out.add(`Email: ${h.slice(7).split("?")[0]!.trim()}`);
+    else if (/^https?:\/\/(wa\.me|api\.whatsapp\.com|t\.me|(www\.)?(instagram|facebook|linkedin|twitter|x|youtube)\.com)\//i.test(h)) out.add(`Link: ${h.split("?")[0]}`);
+  }
+  return [...out].slice(0, 20);
+}
+
+const linesOf = (html: string) =>
+  decode(html)
     .split("\n")
     .map((l) => l.replace(/[ \t ]+/g, " ").trim())
     .filter((l) => l.length > 0)
     .join("\n");
-  return { title, text, links };
+
+export function htmlToText(html: string): { title: string; text: string; links: string[]; footer: string } {
+  const title = decode((html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] ?? "").replace(/\s+/g, " ").trim());
+  const links = [...html.matchAll(/<a\s[^>]*href\s*=\s*["']([^"'#]+)["']/gi)].map((m) => m[1]!);
+  const meta = decode(html.match(/<meta[^>]+(?:name|property)\s*=\s*["'](?:description|og:description)["'][^>]*content\s*=\s*["']([^"']*)["']/i)?.[1] ?? "").trim();
+  const body = linesOf(
+    html
+      .replace(/<!--[\s\S]*?-->/g, " ")
+      .replace(/<(script|style|noscript|svg|template|iframe|nav|footer|header|form)[\s\S]*?<\/\1>/gi, " ")
+      .replace(/<(br|\/p|\/div|\/li|\/h[1-6]|\/tr|\/section|\/article)[^>]*>/gi, "\n")
+      .replace(/<[^>]+>/g, " ")
+  );
+  const facts = jsonLdFacts(html);
+  const text = [meta.length > 20 ? meta : "", facts.join("\n"), body].filter(Boolean).join("\n");
+  // Footers repeat on every page, so they are returned separately (kept once for the home page: address, hours, phone live there)
+  const footerHtml = html.match(/<footer[\s\S]*?<\/footer>/i)?.[0] ?? "";
+  const footer = linesOf(footerHtml.replace(/<(script|style|svg)[\s\S]*?<\/\1>/gi, " ").replace(/<(br|\/p|\/div|\/li)[^>]*>/gi, "\n").replace(/<[^>]+>/g, " ")).slice(0, 1500);
+  return { title, text, links, footer };
 }
 
 const SKIP_EXT = /\.(jpe?g|png|gif|webp|svg|ico|pdf|zip|mp4|mp3|css|js|json|xml|woff2?|ttf|docx?|xlsx?)(\?|$)/i;
@@ -116,33 +186,79 @@ function normalise(raw: string, base: URL): string | null {
   }
 }
 
-/** Sitemap first (cheap, complete), falling back to following links from the home page. */
-export async function discoverPages(rootUrl: string, maxPages: number): Promise<string[]> {
+export interface Discovery {
+  urls: string[];
+  sitemap: string | null;
+  sitemapUrls: number;
+  viaLinks: boolean;
+}
+
+const locsOf = (xml: string) => [...xml.matchAll(/<loc>\s*(?:<!\[CDATA\[)?\s*([^<\s\]]+)\s*(?:\]\]>)?\s*<\/loc>/gi)].map((m) => decode(m[1]!));
+
+/**
+ * Sitemap first (robots.txt "Sitemap:" lines, then the usual paths, following sitemap indexes), falling back to a two-level
+ * link crawl from the home page when the site has none. Returns what was discovered so the screen can show it.
+ */
+export async function discoverPages(rootUrl: string, maxPages: number): Promise<Discovery> {
   const root = await assertPublicUrl(rootUrl);
   const found = new Set<string>();
+  // Collect widely, then keep the most important pages: shallow URLs (/about, /pricing, /courses) before deep ones (/blog/2021/...)
+  const COLLECT = 3000;
   const add = (u: string | null) => {
-    if (u && found.size < maxPages) found.add(u);
+    if (u && found.size < COLLECT) found.add(u);
   };
   add(normalise(root.toString(), root));
 
-  const sm = await fetchText(new URL("/sitemap.xml", root.origin).toString(), "application/xml,text/xml").catch(() => null);
-  if (sm) {
-    let locs = [...sm.body.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/gi)].map((m) => decode(m[1]!));
-    const nested = locs.filter((l) => /\.xml(\?|$)/i.test(l)).slice(0, 3);
-    if (nested.length) {
-      locs = locs.filter((l) => !/\.xml(\?|$)/i.test(l));
-      for (const n of nested) {
-        const sub = await fetchText(n, "application/xml,text/xml").catch(() => null);
-        if (sub) locs.push(...[...sub.body.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/gi)].map((m) => decode(m[1]!)));
+  const candidates: string[] = [];
+  const robots = await fetchText(new URL("/robots.txt", root.origin).toString(), "text/plain").catch(() => null);
+  if (robots) for (const m of robots.body.matchAll(/^\s*sitemap:\s*(\S+)/gim)) candidates.push(m[1]!);
+  for (const p of ["/sitemap.xml", "/sitemap_index.xml", "/wp-sitemap.xml", "/sitemap-index.xml", "/sitemap/sitemap.xml"]) candidates.push(new URL(p, root.origin).toString());
+
+  let sitemapUsed: string | null = null;
+  let sitemapUrls = 0;
+  const visited = new Set<string>();
+  const queue = [...new Set(candidates)].slice(0, 10);
+  let fetched = 0;
+  while (queue.length && fetched < 12) {
+    const sm = queue.shift()!;
+    if (visited.has(sm)) continue;
+    visited.add(sm);
+    fetched++;
+    const doc = await fetchText(sm, "application/xml,text/xml").catch(() => null);
+    if (!doc || !/<(urlset|sitemapindex)/i.test(doc.body)) continue;
+    sitemapUsed ??= sm;
+    for (const l of locsOf(doc.body)) {
+      if (/\.xml(\?|$)/i.test(l)) queue.push(l);
+      else {
+        sitemapUrls++;
+        add(normalise(l, root));
       }
     }
-    for (const l of locs) add(normalise(l, root));
+    if (found.size >= COLLECT) break;
   }
-  if (found.size < Math.min(maxPages, 5)) {
+
+  let viaLinks = false;
+  if (found.size < Math.min(maxPages, 8)) {
+    viaLinks = true;
     const home = await fetchText(root.toString()).catch(() => null);
-    if (home) for (const l of htmlToText(home.body).links) add(normalise(l, root));
+    const level1: string[] = [];
+    if (home) {
+      for (const l of htmlToText(home.body).links) {
+        const n = normalise(l, root);
+        if (n && !found.has(n)) level1.push(n);
+        add(n);
+      }
+    }
+    for (const u of level1.slice(0, 12)) {
+      if (found.size >= COLLECT) break;
+      const pg = await fetchText(u).catch(() => null);
+      if (pg) for (const l of htmlToText(pg.body).links) add(normalise(l, root));
+    }
   }
-  return [...found];
+  const depth = (u: string) => new URL(u).pathname.split("/").filter(Boolean).length;
+  const home = normalise(root.toString(), root);
+  const ordered = [...found].sort((a, b) => (a === home ? -1 : b === home ? 1 : depth(a) - depth(b)));
+  return { urls: ordered.slice(0, maxPages), sitemap: sitemapUsed, sitemapUrls, viaLinks };
 }
 
 /** Paragraph-aware chunks of ~targetChars, never splitting mid-sentence when avoidable. */

@@ -46,8 +46,10 @@ interface Convo {
   last_message: { content: string; direction: "inbound" | "outbound"; channel: string } | null;
   last_at: string;
 }
+interface Source { id: string; channel: Channel; label: string; open: number; unread: number }
 interface ConvoList extends Paged<Convo> {
   unread_conversations: number;
+  sources: Source[];
   counts: Record<ConvStatus | "snoozed", number>;
 }
 interface Msg {
@@ -75,11 +77,25 @@ export function InboxView() {
   const [status, setStatus] = React.useState<ConvStatus>("open");
   const [filter, setFilter] = React.useState<Filter>("all");
   const [search, setSearch] = React.useState("");
+  const [source, setSource] = React.useState<string>("all");
   const q = useDebounced(search);
+  const qcl = useQueryClient();
+
+  // Pull new mail from connected mailboxes while the Inbox is open (works without the background scheduler)
+  useQuery({
+    queryKey: ["mailbox-sync"],
+    queryFn: async () => {
+      const r = await api<{ checked: number; imported: number }>("/api/mailbox/sync", { method: "POST" });
+      if (r.imported > 0) qcl.invalidateQueries({ queryKey: ["inbox"] });
+      return r;
+    },
+    refetchInterval: 60_000,
+    retry: false,
+  });
 
   const list = useQuery({
-    queryKey: ["inbox", status, filter, q],
-    queryFn: () => api<ConvoList>(`/api/inbox?status=${status}&filter=${filter}&page_size=50${q ? `&q=${encodeURIComponent(q)}` : ""}`),
+    queryKey: ["inbox", status, filter, q, source],
+    queryFn: () => api<ConvoList>(`/api/inbox?status=${status}&filter=${filter}&page_size=50${q ? `&q=${encodeURIComponent(q)}` : ""}${source !== "all" ? `&inbox_id=${source}` : ""}`),
     refetchInterval: 10_000,
     placeholderData: keepPreviousData,
   });
@@ -96,6 +112,19 @@ export function InboxView() {
             <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input className="pl-9" placeholder="Search conversations" value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
+          {list.data && list.data.sources.length > 1 ? (
+            <div className="flex flex-wrap gap-1" role="group" aria-label="Filter by source">
+              <button onClick={() => setSource("all")} className={cn("rounded-md border px-2 py-1 text-xs font-medium", source === "all" ? "border-primary bg-accent" : "hover:bg-muted/70")}>All sources</button>
+              {list.data.sources.map((src) => (
+                <button key={src.id} onClick={() => setSource(src.id)} className={cn("flex max-w-full items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-medium", source === src.id ? "border-primary bg-accent" : "hover:bg-muted/70")}>
+                  <ChannelIcon channel={src.channel} className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">{src.label}</span>
+                  <span className="text-muted-foreground">{src.open}</span>
+                  {src.unread > 0 ? <span className="rounded-full bg-primary px-1.5 text-[10px] text-primary-foreground">{src.unread}</span> : null}
+                </button>
+              ))}
+            </div>
+          ) : null}
           <div className="flex gap-1">
             {STATUSES.map((st) => (
               <button
@@ -162,9 +191,10 @@ export function InboxView() {
                       </span>
                       <span className="shrink-0 text-[11px] text-muted-foreground">{timeAgo(c.last_at)}</span>
                     </div>
+                    <p className="truncate text-[11px] text-muted-foreground">{c.inbox.channel === "email" ? "Email" : c.inbox.channel === "webchat" ? "Web chat" : c.inbox.channel[0]!.toUpperCase() + c.inbox.channel.slice(1)} &middot; {c.inbox.name}</p>
                     <div className="flex items-center justify-between gap-2">
                       <span className="truncate text-xs text-muted-foreground">
-                        {c.last_message ? `${c.last_message.direction === "outbound" ? "You: " : ""}${c.last_message.content}` : ""}
+                        {c.last_message ? `${c.last_message.direction === "outbound" ? "You: " : ""}${preview(c.last_message.content)}` : ""}
                       </span>
                       {c.unread > 0 && <Badge className="h-5 min-w-5 justify-center px-1.5">{c.unread}</Badge>}
                     </div>
@@ -188,6 +218,12 @@ export function InboxView() {
       </section>
     </div>
   );
+}
+
+/** "Subject: X, blank line, body" becomes "X: body" for email rows. */
+function preview(content: string): string {
+  const m = content.match(/^Subject:\s*(.+?)\n+([\s\S]*)$/);
+  return m ? `${m[1]}: ${m[2]!.replace(/\s+/g, " ")}` : content.replace(/\s+/g, " ");
 }
 
 function Ticks({ status }: { status: Msg["status"] }) {

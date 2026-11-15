@@ -22,11 +22,41 @@ export function allowedOrigins(inbox: InboxCtx): string[] {
  * rejected too. This stops other sites from embedding the endpoint in a browser; it is not authentication (non-browser
  * clients can forge Origin), so rate limits and size limits still apply.
  */
+const bareOrigin = (o: string) => o.replace("://www.", "://"); // example.com and www.example.com are the same site
+
+/** Is this browser Origin allowed to use this chat? Our own hosted page is always allowed; customer sites must be in the allow-list. */
+export function originIsAllowed(origin: string, inbox: InboxCtx): boolean {
+  const n = normalizeOrigin(origin);
+  if (!n) return false;
+  return ownOrigins().includes(n) || allowedOrigins(inbox).some((a) => bareOrigin(a) === bareOrigin(n));
+}
+
+/** Strict CORS for the message and poll endpoints: the Origin must be allowed; a missing Origin is only accepted for same-origin GETs. */
 export function originAllowed(req: NextRequest, inbox: InboxCtx): string | null {
   const origin = req.headers.get("origin");
-  if (!origin) return null;
-  const n = normalizeOrigin(origin);
-  return n && allowedOrigins(inbox).includes(n) ? origin : null;
+  if (!origin) {
+    return req.headers.get("sec-fetch-site") === "same-origin" ? ownOrigins()[0] ?? null : null;
+  }
+  return originIsAllowed(origin, inbox) ? origin : null;
+}
+
+/** CSP frame-ancestors value: only the allowed websites (both www and bare) and our own domain may embed the chat frame. */
+export function frameAncestors(inbox: InboxCtx): string {
+  const set = new Set<string>(ownOrigins());
+  for (const o of allowedOrigins(inbox)) {
+    set.add(o);
+    set.add(o.includes("://www.") ? o.replace("://www.", "://") : o.replace("://", "://www."));
+  }
+  return [...set].join(" ");
+}
+
+function ownOrigins(): string[] {
+  const out = new Set<string>();
+  for (const v of [process.env.NEXT_PUBLIC_APP_URL, "https://app.galactech.pro"]) {
+    const n = v ? normalizeOrigin(v) : null;
+    if (n) out.add(n);
+  }
+  return [...out];
 }
 
 export function corsHeaders(origin: string | null): Record<string, string> {

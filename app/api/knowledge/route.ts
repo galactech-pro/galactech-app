@@ -15,7 +15,7 @@ export const GET = withAuth(async (_req, session) => {
       select: { id: true, type: true, title: true, url: true, status: true, error: true, auto_sync: true, sync_every_hours: true, max_pages: true, page_count: true, visibility: true, last_result: true, last_synced_at: true, created_at: true, _count: { select: { chunks: true } } },
     }),
     prisma.knowledge_gaps.count({ where: { org_id: session.org_id, status: "open" } }),
-    prisma.organisations.findUnique({ where: { id: session.org_id }, select: { business_summary: true, auto_reply_mode: true, handoff_message: true } }),
+    prisma.organisations.findUnique({ where: { id: session.org_id }, select: { business_summary: true, business_summary_auto: true, auto_reply_mode: true, handoff_message: true } }),
   ]);
   return ok({ sources, open_gaps: gaps, settings: org });
 });

@@ -75,6 +75,8 @@ export const GET = withAuth(async (_req, session) => {
       last_inbound_at: lastBy.get(r.id) ?? null,
       webhook_url: url,
       snippet: r.channel === "webchat" && base ? webchatSnippet(r.webhook_token) : null,
+      chat_url: r.channel === "webchat" && base ? `${base}/chat/${r.webhook_token}` : null,
+      chat_token: r.channel === "webchat" ? r.webhook_token : null,
       allowed_origins: r.channel === "webchat" && Array.isArray(cfg.allowed_origins) ? cfg.allowed_origins : undefined,
     };
   });

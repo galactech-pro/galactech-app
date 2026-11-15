@@ -170,6 +170,7 @@ model organisations {
   knowledge_gaps         knowledge_gaps[]
   // AI knowledge + auto-reply (see lib/knowledge, lib/ai)
   business_summary       String? // short "about us" text always given to the AI
+  business_summary_auto Boolean @default(true)
   auto_reply_mode        String              @default("off") // off | draft | auto  (auto only sends high-confidence, grounded, compliant replies)
   handoff_message        String? // what the AI says when it cannot answer
   plan                   plan                @default(free)

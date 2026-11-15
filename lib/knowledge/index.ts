@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { prisma } from "@/lib/db";
 import { ApiError } from "@/lib/api";
-import { chunkText, discoverPages, fetchText, htmlToText } from "./crawl";
+import { chunkText, contactLinks, discoverPages, fetchText, htmlToText } from "./crawl";
 
 const sha = (s: string) => createHash("sha256").update(s).digest("hex");
 const MAX_CHUNKS_PER_ORG = 3000;
@@ -35,7 +35,8 @@ export async function syncWebsiteSource(orgId: string, sourceId: string): Promis
   if (!src || !src.url) throw new ApiError(404, "Source not found");
   await prisma.knowledge_sources.updateMany({ where: { id: src.id, org_id: orgId }, data: { status: "syncing", error: null } });
   try {
-    const urls = await discoverPages(src.url, src.max_pages);
+    const discovery = await discoverPages(src.url, src.max_pages);
+    const urls = discovery.urls;
     if (!urls.length) throw new Error("No pages found. Check the address and that the site is public.");
 
     const existing = await prisma.knowledge_chunks.findMany({ where: { source_id: src.id, org_id: orgId }, select: { url: true, content_hash: true } });
@@ -50,13 +51,24 @@ export async function syncWebsiteSource(orgId: string, sourceId: string): Promis
     const added: string[] = [];
     const updated: string[] = [];
     const seen = new Set<string>();
+    const failed: string[] = [];
+    const thin: string[] = [];
+    const contacts = new Set<string>();
+    let homeFooter = "";
+    const origin = new URL(src.url).origin;
     const queue = [...urls];
     const worker = async () => {
       for (let u = queue.shift(); u; u = queue.shift()) {
         const page = await fetchText(u).catch(() => null);
-        if (!page) continue;
-        const { title, text } = htmlToText(page.body);
+        if (!page) {
+          failed.push(u);
+          continue;
+        }
+        const { title, text, footer } = htmlToText(page.body);
+        for (const c of contactLinks(page.body)) contacts.add(c);
+        if (!homeFooter && footer) homeFooter = footer; // the first page read is the home page
         const chunks = chunkText(text);
+        if (text.length < 200) thin.push(u);
         if (!chunks.length) continue;
         pages++;
         seen.add(u);
@@ -75,6 +87,22 @@ export async function syncWebsiteSource(orgId: string, sourceId: string): Promis
     };
     await Promise.all([worker(), worker(), worker(), worker()]);
 
+    // Phone numbers, emails, WhatsApp and social links usually live in headers and footers: keep them as one "contact" page
+    const contactUrl = `${origin}#contact`;
+    const contactText = [...contacts, homeFooter].filter(Boolean).join("\n");
+    if (contactText.length >= 20) {
+      const cchunks = chunkText(contactText, 900);
+      const chashes = cchunks.map(sha);
+      const cold = oldByUrl.get(contactUrl);
+      seen.add(contactUrl);
+      if (!(cold && cold.size === new Set(chashes).size && chashes.every((h) => cold.has(h)))) {
+        await prisma.$transaction([
+          prisma.knowledge_chunks.deleteMany({ where: { source_id: src.id, org_id: orgId, url: contactUrl } }),
+          prisma.knowledge_chunks.createMany({ data: cchunks.map((c, i) => ({ org_id: orgId, source_id: src.id, url: contactUrl, title: "Contact details and links", content: c, content_hash: sha(c), position: i })) }),
+        ]);
+      }
+    }
+
     // Pages that vanished from the site stop being quoted. Only prune after a healthy crawl so one outage can't wipe the KB.
     let removed = 0;
     let gone: string[] = [];
@@ -88,7 +116,10 @@ export async function syncWebsiteSource(orgId: string, sourceId: string): Promis
 
     await prisma.knowledge_sources.updateMany({
       where: { id: src.id, org_id: orgId },
-      data: { status: "ready", error: null, page_count: pages, last_synced_at: new Date(), last_result: { added: added.slice(0, 50), updated: updated.slice(0, 50), removed: gone.slice(0, 50) } },
+      data: { status: "ready", error: null, page_count: pages, last_synced_at: new Date(), last_result: {
+          added: added.slice(0, 50), updated: updated.slice(0, 50), removed: gone.slice(0, 50),
+          report: { sitemap: discovery.sitemap, sitemap_urls: discovery.sitemapUrls, via_links: discovery.viaLinks, discovered: urls.length, read: pages, failed: failed.slice(0, 20), thin: thin.slice(0, 20), contact_found: contactText.length >= 20 },
+        } },
     });
     return { pages, changed, removed, added, updated, gone };
   } catch (e) {
@@ -103,7 +134,15 @@ export async function syncWebsiteSource(orgId: string, sourceId: string): Promis
 export async function syncSource(orgId: string, sourceId: string) {
   const src = await prisma.knowledge_sources.findFirst({ where: { id: sourceId, org_id: orgId }, select: { type: true } });
   if (!src) throw new ApiError(404, "Source not found");
-  return src.type === "website" ? syncWebsiteSource(orgId, sourceId) : syncStaticSource(orgId, sourceId);
+  const result = src.type === "website" ? await syncWebsiteSource(orgId, sourceId) : await syncStaticSource(orgId, sourceId);
+  // Keep the AI's understanding of the business current: rewrite the profile whenever the knowledge changed
+  try {
+    const { refreshBusinessProfile } = await import("./profile");
+    await refreshBusinessProfile(orgId);
+  } catch (e) {
+    console.error("[knowledge] profile refresh failed", e);
+  }
+  return result;
 }
 
 // ------------------------------------------------------------------------------------------------ retrieval

@@ -85,11 +85,30 @@ export const GET = withAuth(async (req, session) => {
     assignee: r.assignee_id ? aMap.get(r.assignee_id) ?? null : null,
     last_message: mMap.get(r.id) ?? null,
   }));
+  // Every connected source with its open and unread conversations, so the screen can separate where messages come from
+  const inboxRows = await prisma.inboxes.findMany({ where: { org_id: org, is_active: true }, select: { id: true, channel: true, provider: true, name: true, identifier: true }, orderBy: { created_at: "asc" } });
+  const perInbox = await prisma.conversations.groupBy({
+    by: ["inbox_id"],
+    where: { org_id: org, contact: { is_active: true }, status: { in: ["open", "pending"] } },
+    _count: { _all: true },
+    _sum: { unread_count: true },
+  });
+  const pm = new Map(perInbox.map((p) => [p.inbox_id, p]));
+  const sources = inboxRows
+    .filter((r) => !(r.channel === "email" && r.provider === "resend") || pm.has(r.id))
+    .map((r) => ({
+      id: r.id,
+      channel: r.channel,
+      label: r.channel === "email" ? (r.provider === "imap" ? r.identifier : "Email (receiving address)") : r.channel === "webchat" ? "Web chat" : r.name,
+      open: pm.get(r.id)?._count._all ?? 0,
+      unread: pm.get(r.id)?._sum.unread_count ?? 0,
+    }));
   const counts = Object.fromEntries(statusCounts.map((s) => [s.status, s._count._all]));
   return ok({
     items,
     total,
     unread_conversations: unreadConversations,
+    sources,
     counts: { open: counts.open ?? 0, pending: counts.pending ?? 0, resolved: counts.resolved ?? 0, snoozed: counts.snoozed ?? 0 },
     page: q.page,
     page_size: q.page_size,

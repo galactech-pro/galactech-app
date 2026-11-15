@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { CrawlSummary, PagesPanel, type CrawlReport } from "@/components/app/knowledge/pages-panel";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Globe, FileText, MessageCircleQuestion, Loader2, RefreshCw, Trash2, Sparkles, Lock, Upload } from "lucide-react";
 import { toast } from "sonner";
@@ -26,14 +27,14 @@ interface Source {
   auto_sync: boolean;
   page_count: number;
   visibility: "public" | "private";
-  last_result: { added?: string[]; updated?: string[]; removed?: string[] } | null;
+  last_result: { added?: string[]; updated?: string[]; removed?: string[]; report?: CrawlReport } | null;
   last_synced_at: string | null;
   _count: { chunks: number };
 }
 interface Overview {
   sources: Source[];
   open_gaps: number;
-  settings: { business_summary: string | null; auto_reply_mode: "off" | "draft" | "auto"; handoff_message: string | null } | null;
+  settings: { business_summary: string | null; business_summary_auto?: boolean; auto_reply_mode: "off" | "draft" | "auto"; handoff_message: string | null } | null;
 }
 interface Gap { id: string; question: string; count: number }
 interface TestResult { answer: string | null; reason?: string; sources: { title: string; url: string | null }[] }
@@ -141,6 +142,7 @@ export function KnowledgeView() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const [viewing, setViewing] = React.useState<string | null>(null);
   // settings
   const s = overview.data?.settings;
   const [summary, setSummary] = React.useState("");
@@ -152,6 +154,15 @@ export function KnowledgeView() {
     setHandoff(s.handoff_message ?? "");
     setMode(s.auto_reply_mode);
   }, [s]);
+  const rewriteProfile = useMutation({
+    mutationFn: () => api<{ profile: string }>("/api/knowledge/profile", { method: "POST" }),
+    onSuccess: (r) => {
+      setSummary(r.profile);
+      refresh();
+      toast.success("Business profile rewritten");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
   const saveSettings = useMutation({
     mutationFn: () => api("/api/knowledge/settings", { method: "PUT", json: { business_summary: summary || null, handoff_message: handoff || null, auto_reply_mode: mode } }),
     onSuccess: () => {
@@ -286,6 +297,11 @@ export function KnowledgeView() {
                       {x.last_synced_at ? `, updated ${new Date(x.last_synced_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}` : ""}
                     </p>
                     {x.error ? <p className="mt-0.5 text-xs text-destructive">{x.error}</p> : null}
+                    {x.type === "website" && x.last_result?.report ? <CrawlSummary r={x.last_result.report} /> : null}
+                    {x.visibility !== "private" && x._count.chunks > 0 ? (
+                      <button type="button" className="mt-1 text-xs underline text-muted-foreground" onClick={() => setViewing(viewing === x.id ? null : x.id)}>{viewing === x.id ? "Hide what the AI read" : "See what the AI read"}</button>
+                    ) : null}
+                    {viewing === x.id ? <PagesPanel sourceId={x.id} /> : null}
                     {x.type === "website" && x.last_result && (x.last_result.added?.length || x.last_result.updated?.length || x.last_result.removed?.length) ? (
                       <p className="mt-0.5 text-xs text-muted-foreground">
                         Last check: {x.last_result.added?.length ?? 0} new, {x.last_result.updated?.length ?? 0} updated, {x.last_result.removed?.length ?? 0} removed
@@ -382,8 +398,12 @@ export function KnowledgeView() {
             <p className="text-xs text-muted-foreground">{MODE_HELP[mode]}</p>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="summary">About your business</Label>
-            <Textarea id="summary" rows={3} maxLength={1500} value={summary} onChange={(e) => setSummary(e.target.value)} placeholder="One or two sentences: what you sell, who for, where you operate." />
+            <Label htmlFor="summary">Business profile</Label>
+            <p className="text-xs text-muted-foreground">{s?.business_summary_auto ? "Written automatically from your website and notes, and refreshed every time they change." : "Written by you. The AI reads it before every answer."} Edit it to correct anything.</p>
+            <Textarea id="summary" rows={9} maxLength={2500} value={summary} onChange={(e) => setSummary(e.target.value)} placeholder="What you sell, who for, prices, location, hours, contact, policies, tone." />
+            <Button type="button" size="sm" variant="outline" onClick={() => rewriteProfile.mutate()} disabled={rewriteProfile.isPending}>
+              {rewriteProfile.isPending ? <Loader2 className="animate-spin" /> : <Sparkles />} Rewrite from my knowledge
+            </Button>
           </div>
           <div className="space-y-2">
             <Label htmlFor="handoff">When the AI cannot answer</Label>

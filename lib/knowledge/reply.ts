@@ -1,10 +1,10 @@
 import { prisma } from "@/lib/db";
-import { generateMessage } from "@/lib/ai";
+import { answerCustomer } from "./answer";
 import { createDraft, draftWarnings } from "@/lib/ai/drafts";
 import { sendOutbound } from "@/lib/channels/outbound";
 import { renderSimple } from "@/lib/email";
 import { replySubjectFor } from "@/lib/email/inbound";
-import { retrieve, recordGap } from "./index";
+import { recordGap } from "./index";
 
 export type AutoReplyResult =
   | { action: "skipped"; reason: string }
@@ -42,37 +42,27 @@ export async function autoReplyToMessage(orgId: string, contactId: string, messa
   });
   if (recentOut >= 3) return { action: "handoff", reason: "several replies already sent recently" };
 
-  const hits = await retrieve(orgId, msg.content, 5);
-  const recent = await prisma.messages.findMany({ where: { org_id: orgId, contact_id: contactId }, orderBy: { created_at: "desc" }, take: 8 });
+  const recent = await prisma.messages.findMany({ where: { org_id: orgId, contact_id: contactId }, orderBy: { created_at: "desc" }, take: 12 });
   const conversation = recent.reverse().map((m) => ({ direction: m.direction, text: m.content }));
-  const channel = msg.channel === "email" ? "email" : "whatsapp"; // generator style: email = long form, everything else = chat
 
-  if (!hits.length) {
-    await recordGap(orgId, msg.content, msg.conversation_id);
-    return handoff(orgId, contactId, msg, org.handoff_message, "no matching knowledge");
+  let ans;
+  try {
+    ans = await answerCustomer({ orgId, contact: { name: contact.full_name, email: contact.email, phone: contact.phone, company: contact.company }, channel: msg.channel === "email" ? "email" : "chat", conversation });
+  } catch (e) {
+    console.error("[kb-auto-reply] answer failed", e);
+    return { action: "skipped", reason: "ai unavailable" };
   }
 
-  const res = await generateMessage({
-    goal: "Answer the customer's latest message using ONLY the approved facts. If the facts do not contain the answer, list what is missing in needs_info and write no message.",
-    contact: { name: contact.full_name, company: contact.company ?? undefined, email: contact.email ?? undefined, phone: contact.phone ?? undefined },
-    channel,
-    tone: "friendly",
-    orgId,
-    orgName: org.name,
-    businessDescription: org.business_summary ?? undefined,
-    approvedOffers: hits.map((h) => h.content.slice(0, 700)),
-    conversation,
-    resolveTags: true,
-  });
-
-  if (res.needs_info.length || !res.message.trim()) {
+  if (ans.status === "unknown" || !ans.reply.trim()) {
     await recordGap(orgId, msg.content, msg.conversation_id);
     return handoff(orgId, contactId, msg, org.handoff_message, "answer not in knowledge");
   }
+  if (ans.status === "partial") await recordGap(orgId, msg.content, msg.conversation_id);
 
-  const sources = [...new Set(hits.map((h) => h.url).filter((u): u is string => !!u))].slice(0, 3);
-  const usesPrivate = hits.some((h) => h.visibility === "private");
-  const context = { origin: "inbox" as const, facts: res.facts, dedupe_key: `kb:${msg.id}`, note: (usesPrivate ? "Uses private knowledge, review before sending. " : "") + (sources.length ? `Sources: ${sources.join(", ")}` : "Source: your text/FAQ knowledge") };
+  const res = { message: ans.reply };
+  const sources = ans.sources;
+  const usesPrivate = ans.usesPrivate;
+  const context = { origin: "inbox" as const, facts: ans.facts, dedupe_key: `kb:${msg.id}`, note: (usesPrivate ? "Uses private knowledge, review before sending. " : "") + (ans.status === "partial" ? "Partly answered, a teammate should confirm the rest. " : "") + (sources.length ? `Sources: ${sources.join(", ")}` : "Source: your text/FAQ knowledge") };
   const warnings = draftWarnings(context, res.message);
 
   // Private knowledge (confirmed sensitive uploads) is never sent without a person reading the reply first.
@@ -99,7 +89,7 @@ export async function autoReplyToMessage(orgId: string, contactId: string, messa
     }
   }
 
-  const d = await createDraft({ orgId, contactId, channel: msg.channel, subject: msg.channel === "email" ? res.subject ?? "Re: your message" : null, body: res.message, context });
+  const d = await createDraft({ orgId, contactId, channel: msg.channel, subject: msg.channel === "email" ? await replySubjectFor(orgId, contactId) : null, body: res.message, context });
   return { action: "drafted", draftId: d.id };
 }
 

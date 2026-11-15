@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { withAuth, ok, fail, parseBody } from "@/lib/api";
 import { prisma } from "@/lib/db";
-import { generateMessage } from "@/lib/ai";
+import { answerCustomer } from "@/lib/knowledge/answer";
 
 const schema = z.object({
   contactId: z.string().uuid(),
@@ -18,21 +18,26 @@ export const POST = withAuth(
     const recent = await prisma.messages.findMany({
       where: { org_id: session.org_id, contact_id: contact.id },
       orderBy: { created_at: "desc" },
-      take: 6,
+      take: 12,
     });
     // The thread is untrusted: passed as `conversation`, never pasted into `goal`.
     const conversation = recent.reverse().map((m) => ({ direction: m.direction, text: m.content }));
-    const goal = body.goal ?? "Write a helpful reply to the customer's latest message.";
-    const industry = (contact.custom_fields as Record<string, unknown> | null)?.industry;
-    const res = await generateMessage({
-      goal,
-      contact: { name: contact.full_name, company: contact.company ?? undefined, industry: typeof industry === "string" ? industry : undefined },
-      channel: "whatsapp",
-      tone: body.tone,
+    const channel = recent.some((m) => m.channel === "email") && recent[recent.length - 1]?.channel === "email" ? "email" : "chat";
+    const ans = await answerCustomer({
       orgId: session.org_id,
+      contact: { name: contact.full_name, email: contact.email, phone: contact.phone, company: contact.company },
+      channel,
       conversation,
-      resolveTags: true,
+      instruction: body.goal,
     });
+    const res = {
+      message: ans.reply,
+      alternatives: [] as string[],
+      needs_info: ans.reply ? [] : ans.missing.length ? ans.missing : ["the knowledge base does not cover this yet"],
+      warnings: ans.status === "partial" ? ["The knowledge base only covers part of this. Check the reply before sending."] : ans.usesPrivate ? ["Uses private knowledge. Check before sending."] : [],
+      status: ans.status,
+      sources: ans.sources,
+    };
     return ok(res);
   },
   { role: "member" }
