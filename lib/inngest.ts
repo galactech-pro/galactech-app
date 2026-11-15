@@ -1,7 +1,7 @@
 import { Inngest } from "inngest";
 
 /**
- * Durable background jobs, delays, retries and cron — replaces the PDF's n8n + Upstash queue.
+ * Durable background jobs, delays, retries and cron - replaces the PDF's n8n + Upstash queue.
  * Functions live in /inngest/*.ts and are served from /api/inngest.
  */
 export const inngest = new Inngest({ id: "omnireach" });

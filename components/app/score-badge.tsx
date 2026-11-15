@@ -17,7 +17,7 @@ const TONE: Record<ReturnType<typeof scoreTone>, string> = {
   grey: "bg-gray-100 text-gray-500 ring-gray-200",
 };
 
-/** AI lead score chip: 1-3 red, 4-6 yellow, 7-10 green, null = grey "–" with the reason (if any) in a tooltip. */
+/** AI lead score chip: 1-3 red, 4-6 yellow, 7-10 green, null = grey "-" with the reason (if any) in a tooltip. */
 export function ScoreBadge({
   score,
   reason,
@@ -37,7 +37,7 @@ export function ScoreBadge({
       )}
       aria-label={score == null ? "Not scored yet" : `Lead score ${score} out of 10`}
     >
-      {score == null ? "–" : score}
+      {score == null ? "-" : score}
     </span>
   );
   const text = reason || (score == null ? "Not scored yet" : null);

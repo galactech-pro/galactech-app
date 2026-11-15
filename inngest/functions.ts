@@ -5,6 +5,8 @@ import { campaignSend } from "./campaign-send";
 import { reconcile } from "./reconcile";
 import { automationEngine, dispatchNewContact, dispatchTagAdded, dispatchScoreChanged, dispatchReply } from "./automation-engine";
 
+import { kbAutoReply, kbResync } from "./knowledge";
+
 export { inngest } from "@/lib/inngest";
 
 export const functions = [
@@ -27,4 +29,6 @@ export const functions = [
   dispatchTagAdded,
   dispatchScoreChanged,
   dispatchReply,
+  kbAutoReply,
+  kbResync,
 ];

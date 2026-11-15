@@ -33,12 +33,12 @@ export function inCallWindow(h: number, start: number, end: number): boolean {
  * THE single pre-send gate. Every send path (inbox reply, campaigns, automations, workflows, voice)
  * MUST call this immediately before contacting a person, and treat ComplianceError as "do not send".
  *
- *  - purpose "service"/"transactional": replies to the contact's own message, receipts, invites — only hard opt-outs/DNC block.
+ *  - purpose "service"/"transactional": replies to the contact's own message, receipts, invites - only hard opt-outs/DNC block.
  *  - purpose "marketing": additionally needs a granted consent row for the channel.
  *  - automated=true (automations/workflows/AI): additionally needs org.auto_outreach_enabled.
  *  - voice: only inside the org's configured calling window (org.call_window_start/end in org.timezone).
- *    NOTE: the window is configurable and defaults to 09:00–21:00; the legal rule behind it is UNVERIFIED
- *    (see docs/research/01) — confirm with counsel before enabling outbound AI calls in production.
+ *    NOTE: the window is configurable and defaults to 09:00-21:00; the legal rule behind it is UNVERIFIED
+ *    (see docs/research/01) - confirm with counsel before enabling outbound AI calls in production.
  */
 export async function assertCanContact(
   orgId: string,
@@ -86,7 +86,7 @@ export async function assertCanContact(
   }
 }
 
-/** Append a consent ledger entry (never update/delete rows — the ledger is the audit trail). */
+/** Append a consent ledger entry (never update/delete rows - the ledger is the audit trail). */
 export async function recordConsent(
   orgId: string,
   contactId: string,

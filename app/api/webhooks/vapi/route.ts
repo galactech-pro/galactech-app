@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * Vapi server messages. Auth: shared secret in a configurable header (VAPI_WEBHOOK_SECRET / VAPI_WEBHOOK_HEADER, see
- * lib/voice/vapi.ts — Vapi's exact scheme is UNVERIFIED). Handling is idempotent and monotonic (lib/channels/voice-events.ts):
+ * lib/voice/vapi.ts - Vapi's exact scheme is UNVERIFIED). Handling is idempotent and monotonic (lib/channels/voice-events.ts):
  * duplicates and late events can neither regress a call's status nor re-emit call/ended.
  */
 export const POST = safe(async (req: NextRequest) => {

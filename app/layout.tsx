@@ -10,7 +10,7 @@ const SITE = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
-  title: { default: "GalacTech — WhatsApp, Email, Telegram & AI voice in one inbox", template: "%s · GalacTech" },
+  title: { default: "GalacTech - WhatsApp, Email, Telegram & AI voice in one inbox", template: "%s · GalacTech" },
   description: "GalacTech brings WhatsApp, email, Telegram, Instagram and AI voice follow-ups into one inbox, with a CRM, automations and analytics built for growing businesses.",
   applicationName: "GalacTech",
   openGraph: { title: "GalacTech", description: "Every channel. One inbox. Zero missed leads.", siteName: "GalacTech", type: "website" },

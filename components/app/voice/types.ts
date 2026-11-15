@@ -35,7 +35,7 @@ export interface VoiceList {
 }
 
 export function fmtDuration(s: number | null | undefined): string {
-  if (!s) return "–";
+  if (!s) return "-";
   const m = Math.floor(s / 60);
   return `${m}:${String(s % 60).padStart(2, "0")}`;
 }

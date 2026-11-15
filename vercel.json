@@ -1,12 +1,23 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "regions": ["bom1"],
+  "regions": [
+    "bom1"
+  ],
   "installCommand": "pnpm install --frozen-lockfile",
   "buildCommand": "pnpm run build",
   "functions": {
-    "app/api/inngest/route.ts": { "maxDuration": 60 },
-    "app/api/webhooks/**/route.ts": { "maxDuration": 30 },
-    "app/api/auth/**/route.ts": { "maxDuration": 30 }
+    "app/api/inngest/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/webhooks/**/route.ts": {
+      "maxDuration": 30
+    },
+    "app/api/auth/**/route.ts": {
+      "maxDuration": 30
+    },
+    "app/api/knowledge/**/route.ts": {
+      "maxDuration": 60
+    }
   }
 }

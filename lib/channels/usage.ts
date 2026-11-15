@@ -10,7 +10,7 @@ const LIMIT_FIELD = { wa_messages: "max_wa_messages_mo", emails: "max_emails_mo"
 const monthIso = () => currentMonth().toISOString().slice(0, 10);
 
 /**
- * M-01: atomic reservation. ONE conditional UPDATE ... SET n = n + k WHERE n + k <= limit RETURNING — concurrent
+ * M-01: atomic reservation. ONE conditional UPDATE ... SET n = n + k WHERE n + k <= limit RETURNING - concurrent
  * senders cannot overshoot the plan. Throws PlanLimitError (never partially reserves). Call releaseUsage() when the
  * provider definitively rejected the send. Replaces checkLimit()+incrementUsage() on every send path.
  */

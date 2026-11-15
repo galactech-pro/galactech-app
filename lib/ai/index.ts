@@ -26,6 +26,7 @@ const MARKET =
   "You write for small and mid-size businesses in India. Use clear, natural Indian-English; light Hinglish is fine only if it fits the tone.";
 
 const GROUNDING_RULES =
+  "STYLE: never use em dashes or en dashes; use commas, full stops or plain hyphens. " +
   "GROUNDING RULES: State only facts present in TRUSTED_FACTS. Do NOT invent or imply prices, discounts, offers, dates, deadlines, guarantees, " +
   "features, names, phone numbers, links or email addresses. You may mention an offer only if it appears in approved_offers. " +
   "If a fact you would need is missing, do not guess: use a neutral phrase, or if the message cannot be written without it, return an empty " +

@@ -15,7 +15,7 @@ const Schema = z
 /** L-02: the engine treats payload.test === true as a no-op dry run; never let an API caller set it. */
 const omitTest = ({ test: _t, ...rest }: Record<string, unknown>) => rest;
 
-/** POST /api/public/v1/automations/:id/trigger — fires an active automation for one contact. Pro plan. */
+/** POST /api/public/v1/automations/:id/trigger - fires an active automation for one contact. Pro plan. */
 export const POST = safe<{ id: string }>(async (req, ctx) => {
   const g = await publicGuard(req);
   if ("response" in g) return g.response;

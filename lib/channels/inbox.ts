@@ -130,7 +130,7 @@ export async function ensureContactInbox(contactId: string, inboxId: string, sou
 }
 
 /**
- * One conversation per (contact, inbox) — Chatwoot's "lock to single conversation". There is no DB unique for it, so
+ * One conversation per (contact, inbox) - Chatwoot's "lock to single conversation". There is no DB unique for it, so
  * creation is serialised with a transaction-scoped advisory lock. When a conversation is created for a contact with
  * legacy messages, last_inbound_at is backfilled from them (needed for the WhatsApp window).
  */

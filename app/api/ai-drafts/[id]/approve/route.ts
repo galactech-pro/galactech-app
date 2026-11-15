@@ -15,7 +15,7 @@ const Body = z.object({
 });
 
 /**
- * POST /api/ai-drafts/:id/approve — a human approves (optionally after editing) and the message is sent.
+ * POST /api/ai-drafts/:id/approve - a human approves (optionally after editing) and the message is sent.
  * Compliance (consent / opt-out / DNC) is re-checked at send time. The claim is atomic, so double clicks send once.
  */
 export const POST = withAuth<{ id: string }>(

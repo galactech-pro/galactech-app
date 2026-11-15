@@ -113,7 +113,7 @@ async function handle(ev: RzEvent) {
 }
 
 export async function POST(req: NextRequest) {
-  const raw = await req.text(); // RAW body — signature is computed over the exact bytes
+  const raw = await req.text(); // RAW body - signature is computed over the exact bytes
   if (!verifyWebhookSignature(raw, req.headers.get("x-razorpay-signature"))) {
     return NextResponse.json({ success: false, data: null, error: "Invalid signature" }, { status: 401 });
   }

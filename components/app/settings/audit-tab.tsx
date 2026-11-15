@@ -72,7 +72,7 @@ export function AuditTab() {
               { key: "when", header: "When", cell: (r) => <span className="whitespace-nowrap text-muted-foreground">{new Date(r.created_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}</span> },
               { key: "who", header: "User", cell: (r) => r.user?.full_name ?? r.user?.email ?? "System", className: "hidden sm:table-cell", headClassName: "hidden sm:table-cell" },
               { key: "action", header: "Action", cell: (r) => <code className="text-xs">{r.action}</code> },
-              { key: "entity", header: "Entity", cell: (r) => <span className="text-muted-foreground">{r.entity_type ?? "—"}{r.entity_id ? ` · ${r.entity_id.slice(0, 8)}` : ""}</span>, className: "hidden md:table-cell", headClassName: "hidden md:table-cell" },
+              { key: "entity", header: "Entity", cell: (r) => <span className="text-muted-foreground">{r.entity_type ?? "-"}{r.entity_id ? ` · ${r.entity_id.slice(0, 8)}` : ""}</span>, className: "hidden md:table-cell", headClassName: "hidden md:table-cell" },
             ]}
           />
         )}

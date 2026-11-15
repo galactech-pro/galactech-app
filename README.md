@@ -27,14 +27,14 @@ See `ARCHITECTURE.md` for design decisions and conventions.
 Vercel (set all env vars, add the Inngest Vercel integration). No second server needed.
 
 ## Status / known gaps
-Built per the PDF, typechecks and `next build` pass. **Nothing has been exercised against live Supabase/Meta/Vapi/Razorpay yet** — do a test-mode pass for each provider before launch.
+Built per the PDF, typechecks and `next build` pass. **Nothing has been exercised against live Supabase/Meta/Vapi/Razorpay yet** - do a test-mode pass for each provider before launch.
 Gaps: Zoho/Calendly/Google Sheets are connect-only (no sync); notification preferences and outbound webhooks aren't persisted; no delete-organisation API; no plan switching between paid tiers or annual checkout; custom domain stores the string only; campaign archive missing; PDF export is basic text.
 
-## Hardening pass (security, sync, channels, AI) — read these before launch
-- `docs/research/01–04` — sourced research + code audit (44 findings; fixes tracked in `docs/REMEDIATION_PLAN.md`).
-- `docs/SECURITY.md` (webhook table, key rotation), `docs/CHANNELS.md` (pipeline + how to add a channel), `docs/COMPLIANCE.md` (consent sources), `docs/OPEN_QUESTIONS.md` (**UNVERIFIED legal/provider facts — confirm before production**).
-- `docs/META_SETUP.md` — how to get WhatsApp / Instagram / Messenger / Telegram access and what Meta review needs.
+## Hardening pass (security, sync, channels, AI) - read these before launch
+- `docs/research/01-04` - sourced research + code audit (44 findings; fixes tracked in `docs/REMEDIATION_PLAN.md`).
+- `docs/SECURITY.md` (webhook table, key rotation), `docs/CHANNELS.md` (pipeline + how to add a channel), `docs/COMPLIANCE.md` (consent sources), `docs/OPEN_QUESTIONS.md` (**UNVERIFIED legal/provider facts - confirm before production**).
+- `docs/META_SETUP.md` - how to get WhatsApp / Instagram / Messenger / Telegram access and what Meta review needs.
 - Checks: `pnpm typecheck`, `pnpm check:tenant`, `pnpm exec tsx scripts/{idempotency-check,ai-guard-check,ai-eval}.ts`.
-- Channels: WhatsApp, Email, Voice (Vapi), Telegram, Messenger, Instagram, SMS (Twilio), Web chat, API — connect at `/channels`. Extra env: `META_APP_SECRET`, `STOP_SCOPE`, `AI_CALL_DISCLOSURE_*`, `ENCRYPTION_KEY_PREVIOUS`, `INNGEST_SIGNING_KEY` (required in production).
+- Channels: WhatsApp, Email, Voice (Vapi), Telegram, Messenger, Instagram, SMS (Twilio), Web chat, API - connect at `/channels`. Extra env: `META_APP_SECRET`, `STOP_SCOPE`, `AI_CALL_DISCLOSURE_*`, `ENCRYPTION_KEY_PREVIOUS`, `INNGEST_SIGNING_KEY` (required in production).
 - Safety defaults: AI-written messages need human approval (`/drafts`); automatic outreach is OFF until enabled AND the contact has recorded consent; an inbound message is NOT marketing consent.
-- After `pnpm db:push`, smoke-test the raw-SQL pieces (rate limiter, usage reservation, webhook dedup, inbox list) — they have never run against a real database.
+- After `pnpm db:push`, smoke-test the raw-SQL pieces (rate limiter, usage reservation, webhook dedup, inbox list) - they have never run against a real database.

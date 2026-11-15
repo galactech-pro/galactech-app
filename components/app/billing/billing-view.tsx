@@ -65,7 +65,7 @@ function loadRazorpay(): Promise<boolean> {
 }
 
 const inr = (n: number | string) => `₹${Number(n).toLocaleString("en-IN")}`;
-const date = (d: string | null) => (d ? new Date(d).toLocaleDateString("en-IN", { dateStyle: "medium" }) : "—");
+const date = (d: string | null) => (d ? new Date(d).toLocaleDateString("en-IN", { dateStyle: "medium" }) : "-");
 const RANK: Record<Plan, number> = { free: 0, starter: 1, growth: 2, pro: 3 };
 
 function featureList(f: unknown): string[] {

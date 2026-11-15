@@ -4,13 +4,18 @@ import { render } from "@react-email/components";
 
 export type TransactionalKind = "welcome" | "password_reset" | "verify_email" | "invoice" | "trial_ending" | "invite";
 
+// Same tokens as the app (Resend-style dark): black page, #111 card, #333 borders, green only for the primary action.
+const FONT = "Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif";
 const s = {
-  body: { backgroundColor: "#f6f7fb", fontFamily: "Inter, Arial, sans-serif", margin: 0, padding: "24px 0" },
-  card: { backgroundColor: "#ffffff", borderRadius: 12, padding: 32, maxWidth: 520, margin: "0 auto" },
-  h1: { fontSize: 22, color: "#111827", margin: "0 0 16px" },
-  p: { fontSize: 15, lineHeight: "24px", color: "#374151", margin: "0 0 12px" },
-  btn: { backgroundColor: "#4f46e5", color: "#ffffff", borderRadius: 8, padding: "12px 20px", fontSize: 15, textDecoration: "none" },
-  foot: { fontSize: 12, color: "#9ca3af", textAlign: "center" as const, marginTop: 16 },
+  body: { backgroundColor: "#000000", fontFamily: FONT, margin: 0, padding: "32px 12px" },
+  wrap: { maxWidth: 520, margin: "0 auto" },
+  brand: { fontSize: 15, fontWeight: 600, color: "#ffffff", margin: "0 0 20px", letterSpacing: "-0.01em" },
+  dot: { color: "#00C16A" },
+  card: { backgroundColor: "#111111", border: "1px solid #333333", borderRadius: 8, padding: "32px 28px" },
+  h1: { fontSize: 22, fontWeight: 600, color: "#ffffff", margin: "0 0 16px", letterSpacing: "-0.01em", lineHeight: "30px" },
+  p: { fontSize: 15, lineHeight: "24px", color: "#cccccc", margin: "0 0 14px" },
+  btn: { backgroundColor: "#00C16A", color: "#000000", borderRadius: 6, padding: "11px 20px", fontSize: 14, fontWeight: 600, textDecoration: "none", display: "inline-block" },
+  foot: { fontSize: 12, color: "#8a8a8a", textAlign: "center" as const, margin: "20px 0 0", lineHeight: "18px" },
 };
 
 interface Shell {
@@ -22,26 +27,34 @@ interface Shell {
 
 function Layout({ preview, title, paragraphs, cta }: Shell) {
   return (
-    <Html>
-      <Head />
+    <Html lang="en">
+      <Head>
+        <meta name="color-scheme" content="dark" />
+        <meta name="supported-color-schemes" content="dark" />
+      </Head>
       <Preview>{preview}</Preview>
       <Body style={s.body}>
-        <Container style={s.card}>
-          <Heading style={s.h1}>{title}</Heading>
-          {paragraphs.map((p, i) => (
-            <Text key={i} style={s.p}>
-              {p}
-            </Text>
-          ))}
-          {cta ? (
-            <Section style={{ margin: "20px 0" }}>
-              <Button href={cta.url} style={s.btn}>
-                {cta.label}
-              </Button>
-            </Section>
-          ) : null}
+        <Container style={s.wrap}>
+          <Text style={s.brand}>
+            <span style={s.dot}>&#9679;</span>&nbsp; GalacTech
+          </Text>
+          <Section style={s.card}>
+            <Heading style={s.h1}>{title}</Heading>
+            {paragraphs.map((p, i) => (
+              <Text key={i} style={s.p}>
+                {p}
+              </Text>
+            ))}
+            {cta ? (
+              <Section style={{ margin: "24px 0 4px" }}>
+                <Button href={cta.url} style={s.btn}>
+                  {cta.label}
+                </Button>
+              </Section>
+            ) : null}
+          </Section>
+          <Text style={s.foot}>GalacTech &middot; Every channel, one inbox.</Text>
         </Container>
-        <Text style={s.foot}>GalacTech</Text>
       </Body>
     </Html>
   );

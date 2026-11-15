@@ -5,7 +5,7 @@ import { getAnalytics, resolveRange, RangeQuery, analyticsToCsv, analyticsToPdfL
 
 const Q = RangeQuery.extend({ format: z.enum(["csv", "pdf"]).default("csv") });
 
-/** GET /api/analytics/export?format=csv|pdf&range=... — streams a file download. */
+/** GET /api/analytics/export?format=csv|pdf&range=... - streams a file download. */
 export const GET = withAuth(async (req, session) => {
   const q = parseQuery(req, Q);
   const data = await getAnalytics(session.org_id, resolveRange(q));

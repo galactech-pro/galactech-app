@@ -92,7 +92,7 @@ export interface PlaceCallInput {
 }
 
 /**
- * Creates the ai_calls row and POSTs /call to Vapi — exactly once (called only from the outbound pipeline, which
+ * Creates the ai_calls row and POSTs /call to Vapi - exactly once (called only from the outbound pipeline, which
  * guarantees one invocation per idempotency key). Network error / 5xx -> ambiguous (the call may have been placed):
  * the ai_calls row stays 'initiated' and is resolved by the reconcile job; it is NEVER re-dialled automatically.
  */

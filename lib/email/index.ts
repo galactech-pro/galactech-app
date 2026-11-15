@@ -12,7 +12,7 @@ import { fromAddress } from "./tokens";
 export { renderSimple } from "./templates";
 export { unsubscribeToken, verifyUnsubscribeToken, trackingToken, verifyTrackingToken, clickSignature, verifyClickSignature } from "./tokens";
 
-// ───────────── Platform (transactional/system) sender — not part of the contact outbound pipeline ─────────────
+// ───────────── Platform (transactional/system) sender - not part of the contact outbound pipeline ─────────────
 async function getResend(orgId: string | null): Promise<Resend> {
   let key: string | undefined;
   if (orgId) {

@@ -59,7 +59,8 @@ export const resendEmailAdapter: ChannelAdapter = {
     const unsubUrl = `${appUrl()}/api/email/unsubscribe?t=${unsubscribeToken(msg.contactId)}`;
     const token = trackingToken(msg.messageId);
     let html = rewriteLinks(msg.content.html, token);
-    html += `<p style="font-size:12px;color:#9ca3af;text-align:center;margin-top:24px">Don't want these emails? <a href="${unsubUrl}">Unsubscribe</a></p>`;
+    const foot = `<p style="font-size:12px;color:#8a8a8a;text-align:center;margin:0;padding:0 12px 28px;background:#000000;font-family:Inter,Arial,sans-serif">Don't want these emails? <a href="${unsubUrl}" style="color:#cccccc;text-decoration:underline">Unsubscribe</a></p>`;
+    html = /<\/body>/i.test(html) ? html.replace(/<\/body>/i, foot + "</body>") : html + foot;
     html += `<img src="${appUrl()}/api/email/track/open?t=${token}" width="1" height="1" alt="" style="display:none" />`;
 
     let res: Response;

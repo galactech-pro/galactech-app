@@ -1,3 +1,4 @@
+import { sendOutbound } from "@/lib/channels/outbound";
 import { prisma, type Prisma, type channel } from "@/lib/db";
 import { ApiError } from "@/lib/api";
 import { assertCanContact, safeContact, type ComplianceCode } from "@/lib/compliance";
@@ -34,8 +35,11 @@ async function sendText(orgId: string, contactId: string, ch: channel, subject: 
     const subj = applyMergeTags(subject || "Following up", c);
     const html = await renderSimple(subj, text.split(/\n+/).map((s) => s.trim()).filter(Boolean));
     await sendEmail(orgId, { to: c.email, subject: subj, html, contactId, idempotencyKey, purpose, automated });
+  } else if (ch === "voice" || ch === "api") {
+    throw new ApiError(400, `Sending drafts on ${ch} is not supported`);
   } else {
-    throw new ApiError(400, `Sending drafts on ${ch} is not supported yet`);
+    // telegram / webchat / sms / instagram / messenger: the shared outbound pipeline picks the right adapter
+    await sendOutbound({ orgId, contactId, channel: ch, content: { kind: "text", text }, purpose, automated, idempotencyKey });
   }
 }
 

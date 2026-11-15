@@ -5,7 +5,7 @@ import { audit } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
-/** POST /api/ai-drafts/:id/reject — discard a pending draft. Nothing is sent. */
+/** POST /api/ai-drafts/:id/reject - discard a pending draft. Nothing is sent. */
 export const POST = withAuth<{ id: string }>(
   async (_req, session, ctx) => {
     const { id } = await ctx.params;

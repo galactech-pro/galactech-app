@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  BarChart3, ClipboardCheck, CreditCard, Inbox, LayoutDashboard, Megaphone, Radio, Phone, Plug, Settings, UserCog, Users, Workflow,
+  BarChart3, BookOpen, ClipboardCheck, CreditCard, Inbox, LayoutDashboard, Megaphone, Radio, Phone, Plug, Settings, UserCog, Users, Workflow,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -18,6 +18,7 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
       { href: "/inbox", label: "Inbox", icon: Inbox },
       { href: "/contacts", label: "Contacts", icon: Users },
       { href: "/drafts", label: "Approvals", icon: ClipboardCheck },
+      { href: "/knowledge", label: "Knowledge", icon: BookOpen },
     ],
   },
   {

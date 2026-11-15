@@ -27,7 +27,7 @@ interface ApiKeyRow {
 }
 interface CreatedKey { id: string; name: string; key_prefix: string; expires_at: string | null; key: string }
 
-const fmt = (d: string | null) => (d ? new Date(d).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "—");
+const fmt = (d: string | null) => (d ? new Date(d).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "-");
 
 export function ApiKeysTab({ org }: { org: OrgSettings }) {
   const pro = org.plan === "pro";

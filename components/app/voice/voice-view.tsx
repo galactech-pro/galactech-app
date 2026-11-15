@@ -79,7 +79,7 @@ export function VoiceView() {
       header: "Transcript",
       className: "hidden max-w-[260px] truncate text-xs text-muted-foreground md:table-cell",
       headClassName: "hidden md:table-cell",
-      cell: (c) => (c.transcript ? c.transcript.slice(0, 100) + (c.transcript.length > 100 ? "…" : "") : "–"),
+      cell: (c) => (c.transcript ? c.transcript.slice(0, 100) + (c.transcript.length > 100 ? "…" : "") : "-"),
     },
     {
       key: "actions",
@@ -113,11 +113,11 @@ export function VoiceView() {
         }
       />
       <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-5">
-        <Stat label="Total calls" value={s ? s.total_calls.toLocaleString("en-IN") : "–"} />
-        <Stat label="Answer rate" value={s ? `${s.answer_rate}%` : "–"} />
-        <Stat label="Avg duration" value={s ? fmtDuration(s.avg_duration_seconds) : "–"} />
-        <Stat label="Calls this month" value={s ? `${s.calls_this_month}${s.calls_limit != null ? ` / ${s.calls_limit}` : ""}` : "–"} />
-        <Stat label="Cost" value={s ? inr(s.cost_total_inr) : "–"} sub={s ? `${inr(s.cost_this_month_inr)} this month` : undefined} />
+        <Stat label="Total calls" value={s ? s.total_calls.toLocaleString("en-IN") : "-"} />
+        <Stat label="Answer rate" value={s ? `${s.answer_rate}%` : "-"} />
+        <Stat label="Avg duration" value={s ? fmtDuration(s.avg_duration_seconds) : "-"} />
+        <Stat label="Calls this month" value={s ? `${s.calls_this_month}${s.calls_limit != null ? ` / ${s.calls_limit}` : ""}` : "-"} />
+        <Stat label="Cost" value={s ? inr(s.cost_total_inr) : "-"} sub={s ? `${inr(s.cost_this_month_inr)} this month` : undefined} />
       </div>
 
       <div className="mb-3 flex flex-wrap items-end gap-3">

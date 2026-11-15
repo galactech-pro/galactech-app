@@ -9,7 +9,7 @@ import { audienceCount, audienceSchema, audienceWhere, contentSchema, metricFor,
 
 type Params = { id: string };
 
-/** Body (optional): { scheduled_at?: ISO date } — overrides campaign.scheduled_at. Future date => status 'scheduled'. */
+/** Body (optional): { scheduled_at?: ISO date } - overrides campaign.scheduled_at. Future date => status 'scheduled'. */
 export const POST = withAuth<Params>(
   async (req, session, ctx) => {
     const { id } = await ctx.params;
@@ -28,7 +28,7 @@ export const POST = withAuth<Params>(
     const c = await prisma.campaigns.findFirst({ where: { id, org_id: session.org_id } });
     if (!c) return fail("Campaign not found", 404);
     if (c.status === "sent" || c.status === "sending") return fail("Campaign has already been sent", 409, "ALREADY_SENT");
-    if (c.status === "paused") return fail("Campaign is paused — use resume", 409);
+    if (c.status === "paused") return fail("Campaign is paused - use resume", 409);
 
     const content = contentSchema.parse(c.content) as CampaignContent;
     const err = validateContent(c.channel, content);
@@ -53,7 +53,7 @@ export const POST = withAuth<Params>(
       });
       if (cold > 0) {
         return fail(
-          `${cold} of ${size} contacts have not messaged you in the last 24 hours. WhatsApp only allows an approved template for them — add a template to this campaign.`,
+          `${cold} of ${size} contacts have not messaged you in the last 24 hours. WhatsApp only allows an approved template for them - add a template to this campaign.`,
           422,
           "TEMPLATE_REQUIRED"
         );

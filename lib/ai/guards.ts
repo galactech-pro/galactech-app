@@ -68,6 +68,7 @@ export function stripFormatting(input: string): string {
   t = t.replace(/\*\*(.+?)\*\*/g, "$1").replace(/__(.+?)__/g, "$1").replace(/(^|[\s(])\*(?!\s)(.+?)\*(?=[\s).,!?]|$)/g, "$1$2");
   t = t.replace(/^#{1,6}\s*/gm, "").replace(/`([^`]+)`/g, "$1");
   t = t.replace(/&(?:amp|nbsp|quot|apos|#39);/g, (m) => ENTITIES[m] ?? m);
+  t = t.replace(/\s*[—–]\s*/g, ", "); // house style: no em/en dashes in customer-facing text
   return t.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
 }
 

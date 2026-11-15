@@ -61,7 +61,7 @@ export function isCrossOriginMutation(req: Request): boolean {
   return !allowed.has(host);
 }
 
-// Next 15: dynamic route params are a Promise — `const { id } = await ctx.params`
+// Next 15: dynamic route params are a Promise - `const { id } = await ctx.params`
 type Ctx<P> = { params: Promise<P> };
 
 /**

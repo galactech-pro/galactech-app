@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 
 const Query = z.object({ status: z.enum(["pending", "approved", "rejected", "sent", "expired"]).default("pending") });
 
-/** GET /api/ai-drafts?status=pending — AI-written messages waiting for a human decision (newest first). */
+/** GET /api/ai-drafts?status=pending - AI-written messages waiting for a human decision (newest first). */
 export const GET = withAuth(
   async (req, session) => {
     const { status } = parseQuery(req, Query);
