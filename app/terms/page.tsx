@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/app/legal-page";
 
-export const metadata: Metadata = { title: "Terms of Service | GalacTech" };
+export const metadata: Metadata = { title: "Terms of Service" };
 
 export default function TermsPage() {
   return (

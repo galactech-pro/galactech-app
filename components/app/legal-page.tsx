@@ -1,15 +1,12 @@
 import Link from "next/link";
-import { Zap } from "lucide-react";
+import { Brand } from "@/components/app/brand";
 
 export function LegalPage({ title, updated, sections }: { title: string; updated: string; sections: { h: string; p: string[] }[] }) {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
         <div className="mx-auto flex h-16 max-w-3xl items-center justify-between px-4">
-          <Link href="/" className="flex items-center gap-2 font-semibold">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground"><Zap className="h-4 w-4" /></span>
-            GalacTech
-          </Link>
+          <Brand />
           <Link href="/login" className="text-sm text-foreground underline underline-offset-2 hover:no-underline">Sign in</Link>
         </div>
       </header>
