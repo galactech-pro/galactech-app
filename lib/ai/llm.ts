@@ -25,7 +25,7 @@ function geminiModel(temperature: number, json: boolean) {
   if (!key) throw new AiError("AI is not configured (GEMINI_API_KEY missing)");
   const genAI = new GoogleGenerativeAI(key);
   return genAI.getGenerativeModel({
-    model: process.env.GEMINI_MODEL || "gemini-2.5-flash-lite",
+    model: process.env.GEMINI_MODEL || "gemini-3.5-flash-lite",
     generationConfig: { temperature, ...(json ? { responseMimeType: "application/json" } : {}) },
   });
 }
@@ -106,7 +106,7 @@ export async function callModel(o: CallModelOpts): Promise<{ text: string; model
   }
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new AiError("AI is not configured (GEMINI_API_KEY missing)");
-  const model = process.env.GEMINI_MODEL || "gemini-2.5-flash-lite";
+  const model = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
   try {
     const m = new GoogleGenerativeAI(key).getGenerativeModel(
       {
