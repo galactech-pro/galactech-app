@@ -17,7 +17,7 @@ export async function syncStaticSource(orgId: string, sourceId: string): Promise
   await prisma.$transaction([
     prisma.knowledge_chunks.deleteMany({ where: { source_id: src.id, org_id: orgId } }),
     prisma.knowledge_chunks.createMany({
-      data: pieces.map((c, i) => ({ org_id: orgId, source_id: src.id, title: src.title, content: c, content_hash: sha(c), position: i })),
+      data: pieces.map((c, i) => ({ org_id: orgId, source_id: src.id, title: src.title, content: c, content_hash: sha(c), position: i, visibility: src.visibility })),
     }),
     prisma.knowledge_sources.updateMany({
       where: { id: src.id, org_id: orgId },
@@ -30,7 +30,7 @@ export async function syncStaticSource(orgId: string, sourceId: string): Promise
  * Crawl a website and keep the chunk set in step with it: unchanged pages (same hash) are untouched, changed pages are
  * re-chunked, pages that disappeared are deleted. Safe to run repeatedly (cron does, daily).
  */
-export async function syncWebsiteSource(orgId: string, sourceId: string): Promise<{ pages: number; changed: number; removed: number }> {
+export async function syncWebsiteSource(orgId: string, sourceId: string): Promise<{ pages: number; changed: number; removed: number; added: string[]; updated: string[]; gone: string[] }> {
   const src = await prisma.knowledge_sources.findFirst({ where: { id: sourceId, org_id: orgId, type: "website" } });
   if (!src || !src.url) throw new ApiError(404, "Source not found");
   await prisma.knowledge_sources.updateMany({ where: { id: src.id, org_id: orgId }, data: { status: "syncing", error: null } });
@@ -47,6 +47,8 @@ export async function syncWebsiteSource(orgId: string, sourceId: string): Promis
 
     let changed = 0;
     let pages = 0;
+    const added: string[] = [];
+    const updated: string[] = [];
     const seen = new Set<string>();
     const queue = [...urls];
     const worker = async () => {
@@ -62,6 +64,7 @@ export async function syncWebsiteSource(orgId: string, sourceId: string): Promis
         const old = oldByUrl.get(u);
         if (old && old.size === hashes.size && [...hashes].every((h) => old.has(h))) continue; // unchanged
         changed++;
+        (old ? updated : added).push(u);
         await prisma.$transaction([
           prisma.knowledge_chunks.deleteMany({ where: { source_id: src.id, org_id: orgId, url: u } }),
           prisma.knowledge_chunks.createMany({
@@ -74,8 +77,9 @@ export async function syncWebsiteSource(orgId: string, sourceId: string): Promis
 
     // Pages that vanished from the site stop being quoted. Only prune after a healthy crawl so one outage can't wipe the KB.
     let removed = 0;
+    let gone: string[] = [];
     if (pages > 0 && pages >= Math.floor(oldByUrl.size / 2)) {
-      const gone = [...oldByUrl.keys()].filter((u) => !seen.has(u));
+      gone = [...oldByUrl.keys()].filter((u) => !seen.has(u));
       if (gone.length) removed = (await prisma.knowledge_chunks.deleteMany({ where: { source_id: src.id, org_id: orgId, url: { in: gone } } })).count;
     }
     if (pages === 0) throw new Error("Pages were found but none had readable text (the site may need JavaScript to render).");
@@ -84,9 +88,9 @@ export async function syncWebsiteSource(orgId: string, sourceId: string): Promis
 
     await prisma.knowledge_sources.updateMany({
       where: { id: src.id, org_id: orgId },
-      data: { status: "ready", error: null, page_count: pages, last_synced_at: new Date() },
+      data: { status: "ready", error: null, page_count: pages, last_synced_at: new Date(), last_result: { added: added.slice(0, 50), updated: updated.slice(0, 50), removed: gone.slice(0, 50) } },
     });
-    return { pages, changed, removed };
+    return { pages, changed, removed, added, updated, gone };
   } catch (e) {
     await prisma.knowledge_sources.updateMany({
       where: { id: src.id, org_id: orgId },
@@ -115,6 +119,7 @@ export interface KnowledgeHit {
   title: string;
   url: string | null;
   content: string;
+  visibility: string;
   score: number;
 }
 
@@ -127,7 +132,7 @@ export async function retrieve(orgId: string, question: string, k = 5): Promise<
   if (!qs.length) return [];
   const rows = await prisma.knowledge_chunks.findMany({
     where: { org_id: orgId, OR: qs.map((t) => ({ content: { contains: t, mode: "insensitive" as const } })) },
-    select: { id: true, title: true, url: true, content: true },
+    select: { id: true, title: true, url: true, content: true, visibility: true },
     take: 400,
   });
   const df = new Map<string, number>();

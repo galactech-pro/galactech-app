@@ -6,6 +6,8 @@ import { NO_WINDOW, assertNotOptedOut, providerCall, safeEqual, textOf } from ".
  * VERIFIED against the docs (fetched): setWebhook(url, secret_token 1-256 chars [A-Za-z0-9_-], allowed_updates),
  * the secret is echoed in header X-Telegram-Bot-Api-Secret-Token, Message.message_id is unique only WITHIN a chat,
  * Chat.id fits a signed 64-bit int, Update has at most one optional payload field.
+ * Telegram Business (Bot API 7.2+): updates business_connection / business_message, sendMessage business_connection_id. Requires the
+ * owner to have Telegram Premium and Business Mode enabled for the bot in @BotFather. Written from the Bot API docs, not yet tested live.
  * UNVERIFIED (not re-confirmed in this session): sendMessage text limit 4096 chars; error body shape
  * {ok:false, error_code, description, parameters.retry_after}; HTTP 429 on flood limits. No messaging window exists.
  */
@@ -48,27 +50,32 @@ export const telegramAdapter: ChannelAdapter = {
   },
 
   parseInbound(rawBody): InboundEvent[] {
-    let u: { update_id?: number; message?: TgMessage };
+    let u: { update_id?: number; message?: TgMessage; business_message?: TgMessage & { business_connection_id?: string } };
     try {
       u = JSON.parse(rawBody);
     } catch {
       return [];
     }
-    const m = u.message;
+    // Telegram Business: a Premium user connects this bot to their PERSONAL account; their customers' private chats arrive as
+    // business_message. Messages written by the account owner have from.id !== chat.id and are ignored (not customer messages).
+    const biz = u.business_message;
+    const m = biz ?? u.message;
     if (!m || m.chat?.type !== "private" || m.from?.is_bot) return []; // only 1:1 chats; groups/channels are out of scope
+    if (biz && m.from?.id !== m.chat.id) return [];
     const chatId = String(m.chat.id);
+    const prefix = biz ? "b" : "";
     const name = [m.from?.first_name, m.from?.last_name].filter(Boolean).join(" ") || m.from?.username;
     const type = contentTypeOf(m as unknown as Record<string, unknown>);
     return [
       {
         kind: "message",
-        // message_id is only unique per chat -> compose with the chat id
-        externalId: `${chatId}:${m.message_id}`,
-        sourceId: chatId,
+        // message_id is only unique per chat -> compose with the chat id; business chats get their own namespace
+        externalId: `${prefix}${chatId}:${m.message_id}`,
+        sourceId: biz ? `tgb:${chatId}` : chatId,
         contactName: name,
         content: m.text ?? m.caption ?? undefined,
         contentType: type,
-        replyToExternalId: m.reply_to_message ? `${chatId}:${m.reply_to_message.message_id}` : undefined,
+        replyToExternalId: m.reply_to_message ? `${prefix}${chatId}:${m.reply_to_message.message_id}` : undefined,
         sentAt: new Date(m.date * 1000),
       },
     ];
@@ -79,14 +86,23 @@ export const telegramAdapter: ChannelAdapter = {
     const text = textOf(msg);
     const token = String(inbox.config.bot_token ?? "");
     if (!token) throw new ChannelError("NOT_CONNECTED", "Telegram bot token missing; reconnect the channel");
+    // "tgb:<chat id>" = a customer who wrote to the owner's personal account (Telegram Business): reply through that connection
+    const isBiz = msg.to.startsWith("tgb:");
+    const chatId = isBiz ? msg.to.slice(4) : msg.to;
+    const connectionId = typeof inbox.config.business_connection_id === "string" ? inbox.config.business_connection_id : "";
+    if (isBiz && !connectionId) throw new ChannelError("NOT_CONNECTED", "Telegram Business is not connected. In Telegram: Settings > Business > Chatbots, and add your bot.");
     const r = await providerCall(
       telegramApi(token, "sendMessage"),
-      { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ chat_id: msg.to, text: text.slice(0, 4096) }) },
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ chat_id: chatId, text: text.slice(0, 4096), ...(isBiz ? { business_connection_id: connectionId } : {}) }),
+      },
       { label: "Telegram sendMessage" }
     );
     const result = r.json.result as { message_id?: number } | undefined;
     if (r.json.ok !== true || result?.message_id === undefined) throw new ChannelError("UNEXPECTED", "Telegram sendMessage: unexpected response", { ambiguous: true });
-    return { externalId: `${msg.to}:${result.message_id}`, raw: r.json };
+    return { externalId: `${isBiz ? "b" : ""}${chatId}:${result.message_id}`, raw: r.json };
   },
 
   // Telegram sends no delivery receipts to bots.

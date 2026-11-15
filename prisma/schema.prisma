@@ -218,6 +218,7 @@ model organisations {
   consents      consents[]
   ai_drafts     ai_drafts[]
   ai_runs       ai_runs[]
+  action_otps   action_otps[]
 }
 
 model users {
@@ -803,6 +804,8 @@ model knowledge_sources {
   sync_every_hours Int       @default(24)
   max_pages        Int       @default(30)
   page_count       Int       @default(0)
+  visibility       String    @default("public") // public | private (private = confirmed by emailed OTP; AI may only use it in drafts a person approves)
+  last_result      Json? // {added:[url], updated:[url], removed:[url]} from the most recent website check
   last_synced_at   DateTime?
   created_at       DateTime  @default(now())
   updated_at       DateTime  @default(now()) @updatedAt
@@ -821,6 +824,7 @@ model knowledge_chunks {
   url          String? // page the text came from (citation)
   title        String
   content      String
+  visibility   String   @default("public")
   content_hash String // sha256; unchanged pages are not re-chunked on re-sync
   position     Int      @default(0)
   created_at   DateTime @default(now())
@@ -846,4 +850,22 @@ model knowledge_gaps {
   org organisations @relation(fields: [org_id], references: [id], onDelete: Cascade)
 
   @@index([org_id, status])
+}
+
+/// One-time codes (emailed) that confirm sensitive actions such as adding or deleting private knowledge.
+model action_otps {
+  id         String    @id @default(uuid()) @db.Uuid
+  org_id     String    @db.Uuid
+  user_id    String    @db.Uuid
+  purpose    String // kb_add_private | kb_delete
+  code_hash  String
+  payload    String // AES-GCM encrypted JSON of the pending action (never stored in clear)
+  attempts   Int       @default(0)
+  expires_at DateTime
+  used_at    DateTime?
+  created_at DateTime  @default(now())
+
+  org organisations @relation(fields: [org_id], references: [id], onDelete: Cascade)
+
+  @@index([org_id, user_id, purpose])
 }

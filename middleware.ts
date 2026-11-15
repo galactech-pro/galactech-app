@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const PROTECTED = [
   "/dashboard", "/contacts", "/campaigns", "/automations", "/inbox", "/voice",
-  "/analytics", "/channels", "/drafts", "/team", "/integrations", "/settings", "/billing", "/onboarding",
+  "/analytics", "/channels", "/drafts", "/knowledge", "/deals", "/tasks", "/team", "/integrations", "/settings", "/billing", "/onboarding",
 ];
 
 export async function middleware(request: NextRequest) {

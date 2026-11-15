@@ -77,7 +77,7 @@ export async function connectTelegram(orgId: string, botToken: string, name?: st
   try {
     const r = await providerCall(
       telegramApi(botToken, "setWebhook"),
-      { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ url, secret_token: secret, allowed_updates: ["message"] }) },
+      { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ url, secret_token: secret, allowed_updates: ["message", "business_connection", "business_message", "edited_business_message"] }) },
       { label: "Telegram setWebhook" }
     );
     if (r.json.ok !== true) throw new Error("setWebhook returned ok=false");
@@ -87,7 +87,7 @@ export async function connectTelegram(orgId: string, botToken: string, name?: st
   await prisma.inboxes.updateMany({ where: { id: row.id, org_id: orgId }, data: { is_active: true } });
   return {
     inbox_id: row.id, channel: "telegram", name: row.name, identifier: row.identifier, webhook_url: url,
-    notes: ["Webhook registered automatically with a per-bot secret token (no manual step).", "Customers must start the bot first; Telegram has no messaging window."],
+    notes: ["Webhook registered automatically with a per-bot secret token (no manual step).", "Customers must start the bot first; Telegram has no messaging window.", "To also answer people who message your PERSONAL account (needs Telegram Premium): in @BotFather enable Business Mode for this bot, then in Telegram go to Settings > Business > Chatbots and add it."],
   };
 }
 

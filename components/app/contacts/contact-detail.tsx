@@ -125,6 +125,25 @@ export function ContactDetail({ id }: { id: string }) {
     onSuccess: refresh,
     onError: onErr,
   });
+  const [dealOpen, setDealOpen] = React.useState(false);
+  const [dealTitle, setDealTitle] = React.useState("");
+  const [dealValue, setDealValue] = React.useState("");
+  const addDeal = useMutation({
+    mutationFn: () => api("/api/deals", { method: "POST", json: { contact_id: id, title: dealTitle, value_inr: Number(dealValue) || 0 } }),
+    onSuccess: () => {
+      setDealTitle("");
+      setDealValue("");
+      setDealOpen(false);
+      toast.success("Deal created");
+      refresh();
+    },
+    onError: onErr,
+  });
+  const moveDeal = useMutation({
+    mutationFn: (v: { id: string; stage: string }) => api(`/api/deals/${v.id}`, { method: "PATCH", json: { stage: v.stage } }),
+    onSuccess: refresh,
+    onError: onErr,
+  });
   const rescore = useMutation({
     mutationFn: () => api("/api/contacts/score", { method: "POST", json: { contact_id: id } }),
     onSuccess: () => {
@@ -438,9 +457,28 @@ export function ContactDetail({ id }: { id: string }) {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Deals</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">Deals</CardTitle>
+                <Button size="sm" variant="outline" onClick={() => setDealOpen((o) => !o)}><Plus /> Add deal</Button>
+              </div>
             </CardHeader>
             <CardContent>
+              {dealOpen ? (
+                <form
+                  className="mb-3 space-y-2 rounded-md border p-3"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (dealTitle.trim()) addDeal.mutate();
+                  }}
+                >
+                  <Input value={dealTitle} onChange={(e) => setDealTitle(e.target.value)} placeholder="Deal title" maxLength={200} aria-label="Deal title" autoFocus />
+                  <Input value={dealValue} onChange={(e) => setDealValue(e.target.value.replace(/[^\d.]/g, ""))} placeholder="Value in rupees" inputMode="decimal" aria-label="Deal value" />
+                  <div className="flex gap-2">
+                    <Button type="submit" size="sm" disabled={!dealTitle.trim() || addDeal.isPending}>Create</Button>
+                    <Button type="button" size="sm" variant="ghost" onClick={() => setDealOpen(false)}>Cancel</Button>
+                  </div>
+                </form>
+              ) : null}
               {d.deals.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No deals yet.</p>
               ) : (
@@ -449,10 +487,13 @@ export function ContactDetail({ id }: { id: string }) {
                     <li key={dl.id} className="flex items-center justify-between gap-2">
                       <span className="truncate">{dl.title}</span>
                       <span className="flex items-center gap-2 whitespace-nowrap">
-                        Rs {Number(dl.value_inr).toLocaleString("en-IN")}
-                        <Badge variant={dl.stage === "won" ? "success" : dl.stage === "lost" ? "danger" : "muted"} className="capitalize">
-                          {dl.stage}
-                        </Badge>
+                        {"\u20B9"}{Number(dl.value_inr).toLocaleString("en-IN")}
+                        <Select value={dl.stage} onValueChange={(v) => moveDeal.mutate({ id: dl.id, stage: v })}>
+                          <SelectTrigger className="h-7 w-[110px] text-xs capitalize" aria-label={`Stage of ${dl.title}`}><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {["lead", "qualified", "demo", "proposal", "won", "lost"].map((st) => <SelectItem key={st} value={st} className="capitalize">{st}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
                       </span>
                     </li>
                   ))}

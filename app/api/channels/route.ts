@@ -5,7 +5,8 @@ import { encrypt } from "@/lib/crypto";
 import { appUrl } from "@/lib/env";
 import { connectApi, connectMeta, connectSms, connectTelegram, connectWebchat, providerCleanup, webchatSnippet } from "@/lib/channels/adapters/_connect";
 import { normalizeOrigin } from "@/lib/channels/adapters/_webchat";
-import { toInboxCtx } from "@/lib/channels/inbox";
+import { ensureEmailInbox, toInboxCtx } from "@/lib/channels/inbox";
+import { inboundAddress } from "@/lib/email/inbound";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -46,7 +47,7 @@ export const GET = withAuth(async (_req, session) => {
   } catch {
     /* unset in production: URLs omitted */
   }
-  const inboxes = rows.map((r) => {
+  const inboxes = rows.filter((r) => r.channel !== "email").map((r) => {
     let cfg: Record<string, unknown> = {};
     let broken = false;
     try {
@@ -77,7 +78,17 @@ export const GET = withAuth(async (_req, session) => {
       allowed_origins: r.channel === "webchat" && Array.isArray(cfg.allowed_origins) ? cfg.allowed_origins : undefined,
     };
   });
+  // Every org gets an email inbox + its own inbound address (customer replies arrive in the dashboard)
+  let emailAddress: string | null = null;
+  try {
+    await ensureEmailInbox(session.org_id);
+    const em = await prisma.inboxes.findFirst({ where: { org_id: session.org_id, channel: "email", provider: "resend" }, select: { webhook_token: true } });
+    emailAddress = em ? inboundAddress(em.webhook_token) : null;
+  } catch {
+    /* non-fatal */
+  }
   return ok({
+    email_inbound: { address: emailAddress, configured: !!process.env.INBOUND_EMAIL_DOMAIN && !!process.env.RESEND_WEBHOOK_SECRET },
     inboxes,
     platform: {
       whatsapp: !!(org?.wa_phone_number_id && org?.wa_access_token),

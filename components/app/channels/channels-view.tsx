@@ -31,7 +31,7 @@ interface InboxRow {
   snippet: string | null;
   allowed_origins?: string[];
 }
-interface ListData { inboxes: InboxRow[]; platform: { whatsapp: boolean; email: boolean; voice: boolean } }
+interface ListData { email_inbound: { address: string | null; configured: boolean }; inboxes: InboxRow[]; platform: { whatsapp: boolean; email: boolean; voice: boolean } }
 interface ConnectResult { inbox_id: string; name: string; webhook_url?: string; extra_urls?: Record<string, string>; snippet?: string; notes: string[] }
 
 type Connectable = "telegram" | "instagram" | "messenger" | "sms" | "webchat" | "api";
@@ -160,7 +160,7 @@ export function ChannelsView() {
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {([
             { c: "whatsapp", name: "WhatsApp", ok: data.platform.whatsapp, blurb: "Cloud API. Managed in Settings." },
-            { c: "email", name: "Email", ok: data.platform.email, blurb: "Sent through the platform email provider." },
+            { c: "email", name: "Email", ok: data.platform.email, blurb: "Send and receive. Customer replies arrive in your inbox." },
             { c: "voice", name: "AI Voice", ok: data.platform.voice, blurb: "AI calls. Managed under AI Voice." },
           ] as const).map((p) => (
             <Card key={p.c} className="flex flex-col">
@@ -171,8 +171,19 @@ export function ChannelsView() {
                 </div>
                 <CardDescription>{p.blurb}</CardDescription>
               </CardHeader>
-              <CardContent className="mt-auto">
-                <Button asChild size="sm" variant="outline"><a href={p.c === "voice" ? "/voice" : "/settings"}>{p.ok ? "Manage" : "Set up"}</a></Button>
+              <CardContent className="mt-auto space-y-3">
+                {p.c === "email" ? (
+                  data.email_inbound.address ? (
+                    <div className="space-y-1.5 text-xs">
+                      <p className="text-muted-foreground">Your receiving address. Forward your support email here, or give it to customers.</p>
+                      <div className="flex gap-2"><Input readOnly value={data.email_inbound.address} className="h-7 font-mono text-xs" aria-label="Receiving address" /><CopyButton value={data.email_inbound.address} /></div>
+                      {!data.email_inbound.configured ? <p className="text-amber-400">Finish setup: add RESEND_WEBHOOK_SECRET so incoming mail is accepted.</p> : null}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">Receiving is not set up yet. An administrator needs to set INBOUND_EMAIL_DOMAIN and RESEND_WEBHOOK_SECRET (see docs/DEPLOY.md).</p>
+                  )
+                ) : null}
+                {p.c === "email" ? null : <Button asChild size="sm" variant="outline"><a href={p.c === "voice" ? "/voice" : "/settings"}>{p.ok ? "Manage" : "Set up"}</a></Button>}
               </CardContent>
             </Card>
           ))}
@@ -185,7 +196,7 @@ export function ChannelsView() {
               <Card key={c} className="flex flex-col">
                 <CardHeader>
                   <div className="flex items-start justify-between gap-2">
-                    <CardTitle className="flex items-center gap-2 font-display text-base"><ChannelIcon channel={c} /> {m.name}{m.beta ? <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-amber-800">Beta</span> : null}</CardTitle>
+                    <CardTitle className="flex items-center gap-2 font-display text-base"><ChannelIcon channel={c} /> {m.name}{m.beta ? <span className="rounded-sm border border-amber-500/40 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-amber-400">Beta</span> : null}</CardTitle>
                     <Badge variant={live.length ? "success" : "muted"}>{live.length ? `${live.length} connected` : "Not connected"}</Badge>
                   </div>
                   <CardDescription>{m.blurb}</CardDescription>

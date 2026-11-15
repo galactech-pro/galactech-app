@@ -3,6 +3,7 @@ import { generateMessage } from "@/lib/ai";
 import { createDraft, draftWarnings } from "@/lib/ai/drafts";
 import { sendOutbound } from "@/lib/channels/outbound";
 import { renderSimple } from "@/lib/email";
+import { replySubjectFor } from "@/lib/email/inbound";
 import { retrieve, recordGap } from "./index";
 
 export type AutoReplyResult =
@@ -70,11 +71,13 @@ export async function autoReplyToMessage(orgId: string, contactId: string, messa
   }
 
   const sources = [...new Set(hits.map((h) => h.url).filter((u): u is string => !!u))].slice(0, 3);
-  const context = { origin: "inbox" as const, facts: res.facts, dedupe_key: `kb:${msg.id}`, note: sources.length ? `Sources: ${sources.join(", ")}` : "Source: your text/FAQ knowledge" };
+  const usesPrivate = hits.some((h) => h.visibility === "private");
+  const context = { origin: "inbox" as const, facts: res.facts, dedupe_key: `kb:${msg.id}`, note: (usesPrivate ? "Uses private knowledge, review before sending. " : "") + (sources.length ? `Sources: ${sources.join(", ")}` : "Source: your text/FAQ knowledge") };
   const warnings = draftWarnings(context, res.message);
 
-  if (org.auto_reply_mode === "auto" && warnings.length === 0) {
-    const subject = res.subject || "Re: your message";
+  // Private knowledge (confirmed sensitive uploads) is never sent without a person reading the reply first.
+  if (org.auto_reply_mode === "auto" && warnings.length === 0 && !usesPrivate) {
+    const subject = msg.channel === "email" ? await replySubjectFor(orgId, contactId) : "Re: your message";
     try {
       await sendOutbound({
         orgId,

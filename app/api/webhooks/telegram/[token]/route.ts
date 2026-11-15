@@ -4,6 +4,7 @@ import { telegramAdapter } from "@/lib/channels/adapters/telegram";
 import { inboxByToken, notFound, webhookGate } from "@/lib/channels/adapters/_route";
 import { handleStopEvents } from "@/lib/channels/adapters/_stop";
 import { processInboundEvents } from "@/lib/channels/inbound";
+import { rememberBusinessConnection } from "@/lib/channels/adapters/_telegram-business";
 import { limitOrResponse } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
@@ -30,6 +31,7 @@ export const POST = safe<{ token: string }>(async (req: NextRequest, ctx) => {
   const v = telegramAdapter.verifyWebhook({ method: "POST", headers: req.headers, rawBody: raw, query: req.nextUrl.searchParams }, inbox);
   if (!v.ok) return new NextResponse("Invalid secret", { status: 401 });
 
+  await rememberBusinessConnection(inbox, raw).catch((e) => console.error("[telegram] business connection store failed", e));
   const events = telegramAdapter.parseInbound(raw);
   if (events.length === 0) return NextResponse.json({ success: true });
   const stats = await processInboundEvents(inbox, events);

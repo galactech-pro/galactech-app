@@ -4,6 +4,7 @@ import { withAuth, ok, fail, parseBody } from "@/lib/api";
 import { prisma } from "@/lib/db";
 import { audit } from "@/lib/audit";
 import { renderSimple } from "@/lib/email";
+import { replySubjectFor } from "@/lib/email/inbound";
 import { conversationForContact } from "@/lib/channels/conversations";
 import { toApiError } from "@/lib/channels/errors";
 import { sendOutbound } from "@/lib/channels/outbound";
@@ -46,7 +47,7 @@ export const POST = withAuth(
     if (body.template_name) {
       content = { kind: "template", name: body.template_name, params: body.template_params, language: body.template_language };
     } else if (conv.inbox.channel === "email") {
-      const subject = body.subject || "Re: your message";
+      const subject = body.subject || (await replySubjectFor(orgId, conv.contact.id));
       content = { kind: "email", subject, html: await renderSimple(subject, (body.text as string).split(/\n+/).filter(Boolean)), text: body.text };
     } else {
       content = { kind: "text", text: body.text as string };

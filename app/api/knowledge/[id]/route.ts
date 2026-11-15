@@ -28,6 +28,8 @@ export const PATCH = withAuth<{ id: string }>(
 export const DELETE = withAuth<{ id: string }>(
   async (_req, session, ctx) => {
     const { id } = await ctx.params;
+    const src = await prisma.knowledge_sources.findFirst({ where: { id, org_id: session.org_id }, select: { visibility: true } });
+    if (src?.visibility === "private") return fail("Private sources are removed with an emailed confirmation code", 422, "OTP_REQUIRED");
     const r = await prisma.knowledge_sources.deleteMany({ where: { id, org_id: session.org_id } });
     if (!r.count) return fail("Source not found", 404);
     await audit(session, "knowledge.delete", "knowledge_source", id, {});

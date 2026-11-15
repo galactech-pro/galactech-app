@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { decrypt } from "@/lib/crypto";
 import { ApiError } from "@/lib/api";
 import { appUrl, clickSignature, fromAddress, trackingToken, unsubscribeToken } from "@/lib/email/tokens";
+import { inboundAddress } from "@/lib/email/inbound";
 import { ChannelError, type ChannelAdapter, type InboxCtx, type MessageStatus } from "../types";
 
 const TIMEOUT_MS = Number(process.env.EMAIL_HTTP_TIMEOUT_MS) || 15_000;
@@ -30,7 +31,7 @@ function rewriteLinks(html: string, token: string): string {
   });
 }
 
-/** Email via Resend (HTTP API, no SDK). Outbound only for now: inbound/bounce webhooks are not wired (payloads UNVERIFIED). */
+/** Email via Resend (HTTP API, no SDK). Inbound arrives through /api/webhooks/email (Resend Receiving); delivery/bounce status webhooks are not wired. */
 export const resendEmailAdapter: ChannelAdapter = {
   channel: "email",
   provider: "resend",
@@ -41,7 +42,7 @@ export const resendEmailAdapter: ChannelAdapter = {
     supportsMedia: false,
     supportsButtons: false,
     supportsOutbound: true,
-    supportsInbound: false,
+    supportsInbound: true,
     hasSessionWindow: false,
     // We send an Idempotency-Key header, but whether Resend honours it is UNVERIFIED here, so ambiguous failures are
     // only retried when RESEND_IDEMPOTENT_RETRY=1 is set explicitly.
@@ -63,6 +64,10 @@ export const resendEmailAdapter: ChannelAdapter = {
     html = /<\/body>/i.test(html) ? html.replace(/<\/body>/i, foot + "</body>") : html + foot;
     html += `<img src="${appUrl()}/api/email/track/open?t=${token}" width="1" height="1" alt="" style="display:none" />`;
 
+    // Replies to this email come back to the dashboard through Resend Receiving
+    const tokRow = await prisma.inboxes.findFirst({ where: { id: inbox.id, org_id: inbox.org_id }, select: { webhook_token: true } });
+    const replyTo = tokRow ? inboundAddress(tokRow.webhook_token) : null;
+
     let res: Response;
     try {
       res = await fetch("https://api.resend.com/emails", {
@@ -73,6 +78,7 @@ export const resendEmailAdapter: ChannelAdapter = {
           to: msg.to,
           subject: msg.content.subject,
           html,
+          ...(replyTo ? { reply_to: replyTo } : {}),
           headers: { "List-Unsubscribe": `<${unsubUrl}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" },
         }),
         signal: AbortSignal.timeout(TIMEOUT_MS),

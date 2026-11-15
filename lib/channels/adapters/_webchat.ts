@@ -51,7 +51,7 @@ export function publicConfig(inbox: InboxCtx) {
   return {
     title: s("title", 60) || "Chat with us",
     welcome: s("welcome", 200) || "Hi! How can we help?",
-    color: /^#[0-9a-fA-F]{6}$/.test(color) ? color : "#2563eb",
+    color: /^#[0-9a-fA-F]{6}$/.test(color) ? color : "#00C16A",
     collect: inbox.config.collect_details === true,
   };
 }

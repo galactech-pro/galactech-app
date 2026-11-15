@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Globe, FileText, MessageCircleQuestion, Loader2, RefreshCw, Trash2, Sparkles } from "lucide-react";
+import { Globe, FileText, MessageCircleQuestion, Loader2, RefreshCw, Trash2, Sparkles, Lock, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,8 @@ interface Source {
   error: string | null;
   auto_sync: boolean;
   page_count: number;
+  visibility: "public" | "private";
+  last_result: { added?: string[]; updated?: string[]; removed?: string[] } | null;
   last_synced_at: string | null;
   _count: { chunks: number };
 }
@@ -97,6 +99,46 @@ export function KnowledgeView() {
   const toggleSync = useMutation({
     mutationFn: (v: { id: string; auto_sync: boolean }) => api(`/api/knowledge/${v.id}`, { method: "PATCH", json: { auto_sync: v.auto_sync } }),
     onSuccess: refresh,
+  });
+
+  // private information (confirmed with an emailed one-time code)
+  const [pTitle, setPTitle] = React.useState("");
+  const [pContent, setPContent] = React.useState("");
+  const [pending, setPending] = React.useState<{ otp_id: string; action: "add_private" | "delete"; sent_to: string } | null>(null);
+  const [code, setCode] = React.useState("");
+  const fileRef = React.useRef<HTMLInputElement>(null);
+  const onFile = (f: File | undefined) => {
+    if (!f) return;
+    if (f.size > 60_000) return void toast.error("That file is too large. Keep it under 60 KB of text.");
+    if (!/\.(txt|md|csv|json)$/i.test(f.name)) return void toast.error("Upload a .txt, .md, .csv or .json file, or paste the text.");
+    const r = new FileReader();
+    r.onload = () => {
+      setPContent(String(r.result ?? ""));
+      if (!pTitle.trim()) setPTitle(f.name.replace(/\.[^.]+$/, ""));
+    };
+    r.readAsText(f);
+  };
+  const requestOtp = useMutation({
+    mutationFn: (v: { action: "add_private"; title: string; content: string } | { action: "delete"; source_id: string }) =>
+      api<{ otp_id: string; sent_to: string }>("/api/knowledge/otp", { method: "POST", json: v }),
+    onSuccess: (r, v) => {
+      setCode("");
+      setPending({ otp_id: r.otp_id, action: v.action, sent_to: r.sent_to });
+      toast.success(`We emailed a 6-digit code to ${r.sent_to}`);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  const confirmOtp = useMutation({
+    mutationFn: () => api("/api/knowledge/otp/confirm", { method: "POST", json: { otp_id: pending!.otp_id, code, action: pending!.action } }),
+    onSuccess: () => {
+      toast.success(pending?.action === "delete" ? "Removed" : "Saved as private information");
+      setPending(null);
+      setCode("");
+      setPTitle("");
+      setPContent("");
+      refresh();
+    },
+    onError: (e: Error) => toast.error(e.message),
   });
 
   // settings
@@ -183,6 +225,42 @@ export function KnowledgeView() {
 
       <Card>
         <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base"><Lock className="h-4 w-4" /> Private information</CardTitle>
+          <CardDescription>
+            Pricing sheets, internal policies, anything sensitive. Adding or removing it needs a code we email you. The AI may use it, but replies that use it always wait for a person to approve them.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {pending ? (
+            <div className="space-y-3 rounded-md border bg-secondary/40 p-3">
+              <p className="text-sm">Enter the 6-digit code we sent to {pending.sent_to}. It works for 10 minutes.</p>
+              <div className="flex flex-wrap gap-2">
+                <Input value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" autoComplete="one-time-code" placeholder="123456" className="max-w-[160px] font-mono tracking-widest" onKeyDown={(e) => e.key === "Enter" && code.length === 6 && confirmOtp.mutate()} />
+                <Button onClick={() => confirmOtp.mutate()} disabled={code.length !== 6 || confirmOtp.isPending}>
+                  {confirmOtp.isPending ? <Loader2 className="animate-spin" /> : null} Confirm
+                </Button>
+                <Button variant="ghost" onClick={() => setPending(null)}>Cancel</Button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <Input value={pTitle} onChange={(e) => setPTitle(e.target.value)} placeholder="Title, e.g. Wholesale price list" maxLength={120} />
+              <Textarea value={pContent} onChange={(e) => setPContent(e.target.value)} rows={5} placeholder="Paste the information, or upload a text file below" />
+              <div className="flex flex-wrap items-center gap-2">
+                <input ref={fileRef} type="file" accept=".txt,.md,.csv,.json,text/plain" className="hidden" onChange={(e) => { onFile(e.target.files?.[0]); e.target.value = ""; }} />
+                <Button type="button" variant="outline" onClick={() => fileRef.current?.click()}><Upload /> Upload a file</Button>
+                <Button onClick={() => requestOtp.mutate({ action: "add_private", title: pTitle, content: pContent })} disabled={!pTitle.trim() || pContent.trim().length < 10 || requestOtp.isPending}>
+                  {requestOtp.isPending ? <Loader2 className="animate-spin" /> : null} Email me a code
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">Text files only (.txt, .md, .csv, .json, up to 60 KB). For a PDF or Word file, paste the text.</p>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle className="text-base">Sources {sources.length ? <span className="font-normal text-muted-foreground">({totalSections} sections)</span> : null}</CardTitle>
         </CardHeader>
         <CardContent>
@@ -201,12 +279,19 @@ export function KnowledgeView() {
                       <Badge variant={x.status === "ready" ? "secondary" : x.status === "error" ? "destructive" : "outline"}>
                         {x.status === "syncing" ? "reading" : x.status}
                       </Badge>
+                      {x.visibility === "private" ? <Badge variant="outline"><Lock className="mr-1 h-3 w-3" />private</Badge> : null}
                     </p>
                     <p className="mt-0.5 text-xs text-muted-foreground">
                       {x.type === "website" ? `${x.page_count} pages` : x.type === "faq" ? "FAQ" : "Note"}
                       {x.last_synced_at ? `, updated ${new Date(x.last_synced_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}` : ""}
                     </p>
                     {x.error ? <p className="mt-0.5 text-xs text-destructive">{x.error}</p> : null}
+                    {x.type === "website" && x.last_result && (x.last_result.added?.length || x.last_result.updated?.length || x.last_result.removed?.length) ? (
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        Last check: {x.last_result.added?.length ?? 0} new, {x.last_result.updated?.length ?? 0} updated, {x.last_result.removed?.length ?? 0} removed
+                        {x.last_result.added?.length ? ` (new: ${x.last_result.added.slice(0, 2).map((u) => u.replace(/^https?:\/\/[^/]+/, "") || "/").join(", ")}${x.last_result.added.length > 2 ? "..." : ""})` : ""}
+                      </p>
+                    ) : null}
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     {x.type === "website" ? (
@@ -219,7 +304,7 @@ export function KnowledgeView() {
                         </Button>
                       </>
                     ) : null}
-                    <Button size="icon" variant="ghost" aria-label="Remove source" onClick={() => remove.mutate(x.id)}><Trash2 /></Button>
+                    <Button size="icon" variant="ghost" aria-label="Remove source" onClick={() => (x.visibility === "private" ? requestOtp.mutate({ action: "delete", source_id: x.id }) : remove.mutate(x.id))}><Trash2 /></Button>
                   </div>
                 </li>
               ))}
