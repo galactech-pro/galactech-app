@@ -57,6 +57,31 @@ export async function syncWebsiteSource(orgId: string, sourceId: string): Promis
     let homeFooter = "";
     const origin = new URL(src.url).origin;
     const queue = [...urls];
+    const counted = new Set<string>();
+    /** Store one page's text (skips when unchanged). Returns false when the page had nothing readable. */
+    const storePage = async (u: string, title: string, text: string): Promise<boolean> => {
+      const chunks = chunkText(text);
+      if (!chunks.length) return false;
+      if (!counted.has(u)) {
+        counted.add(u);
+        pages++;
+      }
+      seen.add(u);
+      const hashes = new Set(chunks.map(sha));
+      const old = oldByUrl.get(u);
+      if (old && old.size === hashes.size && [...hashes].every((h) => old.has(h))) return true; // unchanged
+      if (!added.includes(u) && !updated.includes(u)) {
+        changed++;
+        (old ? updated : added).push(u);
+      }
+      await prisma.$transaction([
+        prisma.knowledge_chunks.deleteMany({ where: { source_id: src.id, org_id: orgId, url: u } }),
+        prisma.knowledge_chunks.createMany({
+          data: chunks.map((c, i) => ({ org_id: orgId, source_id: src.id, url: u, title: title || u, content: c, content_hash: sha(c), position: i })),
+        }),
+      ]);
+      return true;
+    };
     const worker = async () => {
       for (let u = queue.shift(); u; u = queue.shift()) {
         const page = await fetchText(u).catch(() => null);
@@ -67,25 +92,26 @@ export async function syncWebsiteSource(orgId: string, sourceId: string): Promis
         const { title, text, footer } = htmlToText(page.body);
         for (const c of contactLinks(page.body)) contacts.add(c);
         if (!homeFooter && footer) homeFooter = footer; // the first page read is the home page
-        const chunks = chunkText(text);
         if (text.length < 200) thin.push(u);
-        if (!chunks.length) continue;
-        pages++;
-        seen.add(u);
-        const hashes = new Set(chunks.map(sha));
-        const old = oldByUrl.get(u);
-        if (old && old.size === hashes.size && [...hashes].every((h) => old.has(h))) continue; // unchanged
-        changed++;
-        (old ? updated : added).push(u);
-        await prisma.$transaction([
-          prisma.knowledge_chunks.deleteMany({ where: { source_id: src.id, org_id: orgId, url: u } }),
-          prisma.knowledge_chunks.createMany({
-            data: chunks.map((c, i) => ({ org_id: orgId, source_id: src.id, url: u, title: title || u, content: c, content_hash: sha(c), position: i })),
-          }),
-        ]);
+        await storePage(u, title, text);
       }
     };
     await Promise.all([worker(), worker(), worker(), worker()]);
+
+    // Pages that load their content with JavaScript have almost no text in the raw HTML: open them in a browser and read the result
+    let rendered = 0;
+    if (thin.length) {
+      const { renderPages, MAX_RENDERED_PAGES } = await import("./render");
+      const html = await renderPages(thin.slice(0, MAX_RENDERED_PAGES));
+      for (const [u, doc] of html) {
+        const { title, text } = htmlToText(doc);
+        for (const c of contactLinks(doc)) contacts.add(c);
+        if (text.length >= 200 && (await storePage(u, title, text))) {
+          rendered++;
+          thin.splice(thin.indexOf(u), 1);
+        }
+      }
+    }
 
     // Phone numbers, emails, WhatsApp and social links usually live in headers and footers: keep them as one "contact" page
     const contactUrl = `${origin}#contact`;
@@ -118,7 +144,7 @@ export async function syncWebsiteSource(orgId: string, sourceId: string): Promis
       where: { id: src.id, org_id: orgId },
       data: { status: "ready", error: null, page_count: pages, last_synced_at: new Date(), last_result: {
           added: added.slice(0, 50), updated: updated.slice(0, 50), removed: gone.slice(0, 50),
-          report: { sitemap: discovery.sitemap, sitemap_urls: discovery.sitemapUrls, via_links: discovery.viaLinks, discovered: urls.length, read: pages, failed: failed.slice(0, 20), thin: thin.slice(0, 20), contact_found: contactText.length >= 20 },
+          report: { sitemap: discovery.sitemap, sitemap_urls: discovery.sitemapUrls, via_links: discovery.viaLinks, discovered: urls.length, read: pages, failed: failed.slice(0, 20), thin: thin.slice(0, 20), contact_found: contactText.length >= 20, rendered },
         } },
     });
     return { pages, changed, removed, added, updated, gone };
@@ -175,16 +201,19 @@ export async function retrieve(orgId: string, question: string, k = 5): Promise<
     take: 400,
   });
   const df = new Map<string, number>();
-  const lowered = rows.map((r) => ({ r, c: r.content.toLowerCase(), t: r.title.toLowerCase() }));
+  const lowered = rows.map((r) => ({ r, c: r.content.toLowerCase(), t: r.title.toLowerCase(), segs: (r.url ?? "").toLowerCase().replace(/^https?:\/\/[^/]+/, "").split(/[\/?#_-]+/).filter(Boolean) }));
   for (const q of qs) df.set(q, lowered.filter((x) => x.c.includes(q)).length || 1);
   const n = Math.max(rows.length, 1);
   return lowered
-    .map(({ r, c, t }) => {
+    .map(({ r, c, t, segs }) => {
       let score = 0;
       for (const q of qs) {
         if (c.includes(q)) score += 1 + Math.log(1 + n / df.get(q)!);
         if (t.includes(q)) score += 1.5;
+        // a page whose address is about the topic (for example /batches for "batch") is the page to read first
+        if (segs.some((g) => g === q || g === q + "s" || g === q + "es" || q === g + "s" || q === g + "es")) score += 4;
       }
+      if (segs.length <= 1) score += 0.5; // hub pages beat deep detail pages on a tie
       return { ...r, score };
     })
     .filter((h) => h.score >= 2)

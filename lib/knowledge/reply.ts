@@ -66,7 +66,8 @@ export async function autoReplyToMessage(orgId: string, contactId: string, messa
   const warnings = draftWarnings(context, res.message);
 
   // Private knowledge (confirmed sensitive uploads) is never sent without a person reading the reply first.
-  if (org.auto_reply_mode === "auto" && warnings.length === 0 && !usesPrivate) {
+  // Auto-send only what the knowledge directly confirms (or plain small talk); anything unconfirmed waits for a person
+  if (org.auto_reply_mode === "auto" && warnings.length === 0 && !usesPrivate && (ans.confirmed || ans.intent === "smalltalk")) {
     const subject = msg.channel === "email" ? await replySubjectFor(orgId, contactId) : "Re: your message";
     try {
       await sendOutbound({

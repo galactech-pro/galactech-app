@@ -2,6 +2,9 @@
 node_modules
 .pnpm-store
 
+# copied browser files (created by scripts/copy-chromium.mjs at build time)
+vendor/
+
 # build output
 .next
 .next-*

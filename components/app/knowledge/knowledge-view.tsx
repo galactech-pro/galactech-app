@@ -37,7 +37,7 @@ interface Overview {
   settings: { business_summary: string | null; business_summary_auto?: boolean; auto_reply_mode: "off" | "draft" | "auto"; handoff_message: string | null } | null;
 }
 interface Gap { id: string; question: string; count: number }
-interface TestResult { answer: string | null; reason?: string; sources: { title: string; url: string | null }[] }
+interface TestResult { answer: string | null; reason?: string; sources: { title: string; url: string | null }[]; status?: "answered" | "partial" | "unknown"; missing?: string[]; confirmed?: boolean }
 
 const MODE_HELP: Record<string, string> = {
   off: "The AI never replies on its own.",
@@ -343,12 +343,18 @@ export function KnowledgeView() {
           </div>
           {test.data ? (
             <div className="rounded-md border bg-secondary/40 p-3 text-sm">
-              {test.data.answer ? <p className="whitespace-pre-wrap">{test.data.answer}</p> : <p className="text-muted-foreground">{test.data.reason}</p>}
-              {test.data.sources.length ? (
-                <p className="mt-2 text-xs text-muted-foreground">
-                  Used: {test.data.sources.map((x) => x.url ?? x.title).join(", ")}
+              {test.data.status ? (
+                <p className={`mb-2 text-xs font-medium ${test.data.confirmed ? "text-primary" : "text-amber-400"}`}>
+                  {test.data.confirmed ? "Answered from your knowledge" : test.data.status === "unknown" ? "Not in your knowledge yet. Customers would get this holding reply and you would be alerted." : "Not fully covered by your knowledge. Add the missing details below."}
                 </p>
               ) : null}
+              {test.data.answer ? <p className="whitespace-pre-wrap">{test.data.answer}</p> : <p className="text-muted-foreground">{test.data.reason}</p>}
+              {test.data.missing?.length ? <p className="mt-2 text-xs text-amber-400">Missing: {test.data.missing.join(", ")}</p> : null}
+              {test.data.sources.length ? (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Based on: {test.data.sources.map((x) => x.url ?? x.title).join(", ")}
+                </p>
+              ) : test.data.confirmed === false ? <p className="mt-2 text-xs text-muted-foreground">No page in your knowledge states this directly.</p> : null}
             </div>
           ) : null}
         </CardContent>

@@ -15,6 +15,7 @@ export interface CrawlReport {
   failed: string[];
   thin: string[];
   contact_found: boolean;
+  rendered?: number;
 }
 
 const short = (u: string) => (u.includes("#contact") ? "Contact details and links" : u.replace(/^https?:\/\/[^/]+/, "") || "/");
@@ -25,7 +26,7 @@ export function CrawlSummary({ r }: { r: CrawlReport }) {
     <div className="mt-1 space-y-0.5 text-xs text-muted-foreground">
       <p>
         {r.sitemap ? `Sitemap found (${r.sitemap_urls} pages listed).` : "No sitemap found, so links were followed from the home page."} Read {r.read} of {r.discovered} pages.
-        {r.contact_found ? " Contact details captured." : " No phone or email found on the site."}
+        {r.contact_found ? " Contact details captured." : " No phone or email found on the site."}{r.rendered ? ` ${r.rendered} page${r.rendered === 1 ? "" : "s"} that load their content with JavaScript were opened in a browser.` : ""}
       </p>
       {r.thin.length ? <p className="text-amber-400">{r.thin.length} page{r.thin.length === 1 ? "" : "s"} had very little readable text (the site may load content with JavaScript). Add those details as a note below.</p> : null}
       {r.failed.length ? <p className="text-amber-400">{r.failed.length} page{r.failed.length === 1 ? "" : "s"} could not be opened.</p> : null}

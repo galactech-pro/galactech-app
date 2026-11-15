@@ -40,7 +40,12 @@ const nextConfig = {
   // Lets a second dev server (e.g. smoke tests on :3100) run with its own build dir: NEXT_DIST_DIR=.next-smoke
   distDir: process.env.NEXT_DIST_DIR || ".next",
   poweredByHeader: false,
-  serverExternalPackages: ["@prisma/client"],
+  serverExternalPackages: ["@prisma/client", "@sparticuz/chromium", "puppeteer-core"],
+  // the headless browser (copied to ./vendor as real files at build time) ships with the functions that read JavaScript-driven websites
+  outputFileTracingIncludes: {
+    "/api/inngest": ["./vendor/chromium-bin/**"],
+    "/api/knowledge/**": ["./vendor/chromium-bin/**"],
+  },
   async headers() {
     // /embed/* is the chat frame customers place on their own sites: it sets its own CSP frame-ancestors (the allowed websites)
     // and must not carry X-Frame-Options: DENY or the global frame-ancestors 'none'.
