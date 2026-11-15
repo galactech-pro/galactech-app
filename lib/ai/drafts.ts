@@ -1,4 +1,4 @@
-﻿import { prisma, type Prisma, type channel } from "@/lib/db";
+import { prisma, type Prisma, type channel } from "@/lib/db";
 import { ApiError } from "@/lib/api";
 import { assertCanContact, safeContact, type ComplianceCode } from "@/lib/compliance";
 import { PlanLimitError } from "@/lib/limits";

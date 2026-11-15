@@ -1,5 +1,5 @@
-﻿/**
- * Deterministic lead-score features (audit M-12 / research 03 Â§3.7). PURE module.
+/**
+ * Deterministic lead-score features (audit M-12 / research 03 §3.7). PURE module.
  *
  * The number is computed here, in code, from machine-readable features. The LLM may only nudge it by
  * +/-MAX_LLM_ADJUST with a short reason (see lib/ai/index.ts scoreLead); it never produces the base score.

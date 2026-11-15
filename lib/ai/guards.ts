@@ -1,8 +1,8 @@
-﻿/**
+/**
  * Deterministic AI-output guards. PURE module (no DB / network imports) so scripts/ai-guard-check.ts and
  * scripts/ai-eval.ts can run it with plain `tsx`.
  *
- * Philosophy (docs/research/03 Â§3.1-3.5): the LLM is untrusted. Provider "structured output" modes do not enforce
+ * Philosophy (docs/research/03 §3.1-3.5): the LLM is untrusted. Provider "structured output" modes do not enforce
  * length/semantic constraints, so every generated string is checked here before it can reach a customer.
  */
 
@@ -25,7 +25,7 @@ export function sanitizeUntrusted(value: unknown, max = 300, opts: { multiline?:
     .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f\u2028\u2029]/g, " ")
     .replace(/[<>]/g, (c) => (c === "<" ? "\u2039" : "\u203a"));
   s = (opts.multiline ? s.replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n") : s.replace(/\s+/g, " ")).trim();
-  return s.length > max ? `${s.slice(0, max)}â€¦` : s;
+  return s.length > max ? `${s.slice(0, max)}…` : s;
 }
 
 /** JSON-encode a data object for embedding in a prompt. Angle brackets and line separators are escaped. */
@@ -142,7 +142,7 @@ export function extractClaims(text: string, opts: { claimWords?: boolean } = {})
 
   const amt = (n: string, u?: string) => `amt:${num(n) * mult(u)}`;
   take(
-    /(?:â‚¹|\$|â‚¬|Â£|(?<![a-z])(?:rs\.?|inr|usd|eur|gbp))\s*(\d[\d,]*(?:\.\d+)?)\s*(k|lakhs?|lacs?|crores?|cr|million|mn)?(?![a-z])/gi,
+    /(?:₹|\$|€|£|(?<![a-z])(?:rs\.?|inr|usd|eur|gbp))\s*(\d[\d,]*(?:\.\d+)?)\s*(k|lakhs?|lacs?|crores?|cr|million|mn)?(?![a-z])/gi,
     (m) => ({ type: "currency", value: m[0].trim(), key: amt(m[1]!, m[2]) })
   );
   take(
@@ -228,7 +228,7 @@ export interface VoiceConfig {
 }
 
 /**
- * AI-call disclosure. Whether it is LEGALLY required is UNVERIFIED (docs/research/03 Â§3.9), so the default is ON
+ * AI-call disclosure. Whether it is LEGALLY required is UNVERIFIED (docs/research/03 §3.9), so the default is ON
  * (conservative) and both the switch and the wording are configurable via env. See docs/OPEN_QUESTIONS.md.
  */
 export function getVoiceConfig(orgName: string, env: Record<string, string | undefined> = process.env): VoiceConfig {

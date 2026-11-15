@@ -1,4 +1,4 @@
-﻿import { z } from "zod";
+import { z } from "zod";
 
 /**
  * Automation graph (React Flow shape) stored in automations.steps. SOURCE OF TRUTH for the

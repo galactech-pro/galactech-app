@@ -1,4 +1,4 @@
-﻿# Deploying GalacTech to Vercel
+# Deploying GalacTech to Vercel
 
 Architecture: one Next.js app on Vercel (UI + API) -> Supabase Postgres (database only) -> Inngest Cloud (background jobs). No other server.
 

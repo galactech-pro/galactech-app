@@ -1,4 +1,4 @@
-﻿import { createHash } from "node:crypto";
+import { createHash } from "node:crypto";
 import type { ZodType, ZodTypeDef } from "zod";
 import { prisma, type Prisma } from "@/lib/db";
 import { isTrialExpired } from "@/lib/limits";

@@ -1,4 +1,4 @@
-﻿import type { AutomationGraph, AutomationNode } from "@/lib/automation-graph";
+import type { AutomationGraph, AutomationNode } from "@/lib/automation-graph";
 
 type Trig = Extract<AutomationNode, { type: "trigger" }>["data"];
 type Step =

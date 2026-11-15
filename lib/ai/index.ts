@@ -1,4 +1,4 @@
-﻿import { z } from "zod";
+import { z } from "zod";
 import type { contacts, messages, organisations } from "@/lib/db";
 import { prisma } from "@/lib/db";
 import { applyMergeTags } from "@/lib/utils";
@@ -373,7 +373,7 @@ const outcomeSchema = z.object({
 
 export type CallOutcome = z.infer<typeof outcomeSchema>["outcome"];
 
-const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9à¤€-à¥¿]+/g, " ").trim();
+const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9ऀ-ॿ]+/g, " ").trim();
 
 /**
  * Classify a call. The transcript is callee-controlled text: it is passed ONLY as untrusted data, the output is
