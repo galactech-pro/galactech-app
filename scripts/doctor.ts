@@ -18,7 +18,7 @@ const required = (k: string, why: string) => (has(k) ? ok(k) : bad(`${k} (${why}
 const optional = (k: string, why: string) => (has(k) ? ok(k) : opt(`${k} not set: ${why}`));
 
 async function main() {
-  console.log(`GalacTech doctor (NODE_ENV=${process.env.NODE_ENV ?? "development"})`);
+  console.log(`OmniReach doctor (NODE_ENV=${process.env.NODE_ENV ?? "development"})`);
 
   group("Core");
   required("DATABASE_URL", "Postgres connection, runtime");
@@ -91,7 +91,7 @@ async function main() {
         ok(`RESEND_API_KEY valid; ${domains.length} domain(s)`);
         for (const d of domains) console.log(`              - ${d.name}: ${d.status}`);
         const fromDomain = (process.env.EMAIL_FROM ?? "").match(/@([^>\s]+)/)?.[1]?.toLowerCase();
-        if (!fromDomain) warn("EMAIL_FROM has no address; set e.g. GalacTech <hello@mail.yourdomain.com>");
+        if (!fromDomain) warn("EMAIL_FROM has no address; set e.g. OmniReach <hello@mail.yourdomain.com>");
         else if (fromDomain === "resend.dev") warn("EMAIL_FROM uses the resend.dev sandbox: it only delivers to your own Resend account email");
         else {
           const hit = domains.find((d) => fromDomain === d.name || fromDomain.endsWith("." + d.name));

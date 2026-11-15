@@ -41,7 +41,7 @@ export function WhiteLabelTab({ org }: { org: OrgSettings }) {
         <div className="flex items-center justify-between gap-4 rounded-lg border p-3">
           <div>
             <p className="text-sm font-medium">Enable white-label</p>
-            <p className="text-xs text-muted-foreground">Hides GalacTech branding where supported.</p>
+            <p className="text-xs text-muted-foreground">Hides OmniReach branding where supported.</p>
           </div>
           <Switch checked={enabled} onCheckedChange={setEnabled} aria-label="Enable white-label" />
         </div>

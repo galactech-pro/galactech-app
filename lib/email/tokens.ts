@@ -2,7 +2,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import { appUrl } from "@/lib/env";
 
 export { appUrl };
-export const fromAddress = () => process.env.EMAIL_FROM || "GalacTech <onboarding@resend.dev>";
+export const fromAddress = () => process.env.EMAIL_FROM || "OmniReach <onboarding@resend.dev>";
 
 // ───────────── HMAC tokens (secret derived from ENCRYPTION_KEY) ─────────────
 function secret(label: string): Buffer {

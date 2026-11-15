@@ -29,8 +29,8 @@ Sign up at `/signup`. Auth is built in (email + password).
 | Mode | Setup | What happens |
 |---|---|---|
 | **No key** (default) | leave `RESEND_API_KEY` empty | New accounts are auto-verified; the verify / reset links are printed in the `pnpm dev` terminal. Zero setup. |
-| **Resend sandbox** | `RESEND_API_KEY=re_...` and `EMAIL_FROM=GalacTech <onboarding@resend.dev>` | Real sends, but only to **your own Resend login address**. Good for testing templates. |
-| **Your domain** | Verify a domain in Resend (add its SPF + DKIM DNS records, optionally DMARC), then `EMAIL_FROM=GalacTech <hello@mail.yourdomain.com>` | Sends to anyone. Needed before real users sign up. |
+| **Resend sandbox** | `RESEND_API_KEY=re_...` and `EMAIL_FROM=OmniReach <onboarding@resend.dev>` | Real sends, but only to **your own Resend login address**. Good for testing templates. |
+| **Your domain** | Verify a domain in Resend (add its SPF + DKIM DNS records, optionally DMARC), then `EMAIL_FROM=OmniReach <hello@mail.yourdomain.com>` | Sends to anyone. Needed before real users sign up. |
 
 `pnpm doctor` calls Resend and tells you whether the key is valid and whether the `EMAIL_FROM` domain is verified.
 

@@ -5,7 +5,7 @@ import { isIP } from "node:net";
 
 const MAX_BYTES = 1_500_000;
 const TIMEOUT_MS = 8000;
-const UA = "GalacTechBot/1.0 (+https://galactech.pro)";
+const UA = "OmniReachBot/1.0 (+https://galactech.pro)";
 
 function privateIpv4(ip: string): boolean {
   const p = ip.split(".").map(Number);

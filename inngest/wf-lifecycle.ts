@@ -29,7 +29,7 @@ export const wf005TrialEnding = inngest.createFunction(
         if (!owner) return false;
         const name = owner.full_name ?? "there";
         if (day === 6) {
-          const wa = await notifyOwnerWhatsApp(o.id, `Hi ${name}, your GalacTech trial ends tomorrow. Upgrade today and get 20% off your first month: ${appUrl()}/settings/billing`, `wf-005:trial-wa:${o.id}:${day}`);
+          const wa = await notifyOwnerWhatsApp(o.id, `Hi ${name}, your OmniReach trial ends tomorrow. Upgrade today and get 20% off your first month: ${appUrl()}/settings/billing`, `wf-005:trial-wa:${o.id}:${day}`);
           if (wa) return true;
           return notifyOwnerEmail(o.id, "Your trial ends tomorrow: 20% off to upgrade", [`Hi ${name}, your trial ends tomorrow. Upgrade today and get 20% off your first month.`], { label: "Claim 20% off", url: `${appUrl()}/settings/billing` });
         }
@@ -54,7 +54,7 @@ export const wf007PaymentSuccess = inngest.createFunction(
   async ({ event, step }) => {
     const d = event.data as Events["payment/succeeded"];
     await step.run("congratulate", async () => {
-      const text = `Thank you! Your ${d.plan} plan is now active on GalacTech. Let's grow your business together.`;
+      const text = `Thank you! Your ${d.plan} plan is now active on OmniReach. Let's grow your business together.`;
       if (!(await notifyOwnerWhatsApp(d.org_id, text, `wf-007:${event.id}`))) {
         await notifyOwnerEmail(d.org_id, "Your plan is active", [text], { label: "Open dashboard", url: `${appUrl()}/dashboard` });
       }
@@ -147,7 +147,7 @@ export const wf009WeeklyReport = inngest.createFunction(
             `New contacts: ${newContacts}. AI calls: ${calls} (${interested} interested). Deals won: ${dealsWon}. Hot leads: ${hot}.`,
             ...insights.split("\n").filter((l) => l.trim()),
           ];
-          return notifyOwnerEmail(id, "Your weekly GalacTech report", lines, { label: "View analytics", url: `${appUrl()}/analytics` });
+          return notifyOwnerEmail(id, "Your weekly OmniReach report", lines, { label: "View analytics", url: `${appUrl()}/analytics` });
         } catch (e) {
           console.error("[wf-009]", id, e);
           return false;

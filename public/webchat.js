@@ -1,4 +1,4 @@
-/*! GalacTech web chat widget. Vanilla JS, no dependencies.
+/*! OmniReach web chat widget. Vanilla JS, no dependencies.
  * Usage: <script src="https://YOUR-APP/webchat.js" data-token="INBOX_TOKEN" async></script>
  * Security: every piece of text (visitor, agent, config) is inserted with textContent only; innerHTML is never used.
  * The visitor id lives in localStorage; the host page origin must be in the inbox's allowed-origins list.

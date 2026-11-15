@@ -236,7 +236,7 @@ export function toCsv(headers: string[], rows: unknown[][]): string {
 
 export function analyticsToCsv(a: AnalyticsPayload): string {
   const parts: string[] = [];
-  parts.push("GalacTech analytics report", `Range,${a.range.from},${a.range.to}`, "");
+  parts.push("OmniReach analytics report", `Range,${a.range.from},${a.range.to}`, "");
   parts.push("Overview", toCsv(["metric", "current", "previous", "change_pct"], Object.keys(a.overview.current).map((k) => [k, (a.overview.current as Record<string, number>)[k], (a.overview.previous as Record<string, number>)[k], (a.overview.change_pct as Record<string, number | null>)[k]])), "");
   parts.push("Funnel", toCsv(["stage", "count", "conversion_from_previous_pct", "conversion_from_leads_pct"], a.funnel.map((f) => [f.stage, f.count, f.conversion_from_previous_pct, f.conversion_from_leads_pct])), "");
   parts.push("Channels", toCsv(["channel", "sent", "delivered", "opened", "replied", "reply_rate_pct", "open_rate_pct"], a.channels.map((c) => [c.channel, c.sent, c.delivered, c.opened, c.replied, c.reply_rate_pct, c.open_rate_pct])), "");
@@ -277,7 +277,7 @@ export function simplePdf(lines: string[]): Buffer {
 }
 
 export function analyticsToPdfLines(a: AnalyticsPayload): string[] {
-  const L: string[] = ["GalacTech - Analytics Report", `Range: ${a.range.from.slice(0, 10)} to ${a.range.to.slice(0, 10)}`, ""];
+  const L: string[] = ["OmniReach - Analytics Report", `Range: ${a.range.from.slice(0, 10)} to ${a.range.to.slice(0, 10)}`, ""];
   L.push("OVERVIEW");
   for (const [k, v] of Object.entries(a.overview.current)) L.push(`  ${k}: ${v}  (change ${a.overview.change_pct[k as keyof typeof a.overview.change_pct] ?? "n/a"}%)`);
   L.push("", "FUNNEL");

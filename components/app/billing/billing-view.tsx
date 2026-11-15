@@ -124,7 +124,7 @@ export function BillingView() {
       const rz = new window.Razorpay({
         key,
         subscription_id: r.subscription_id,
-        name: "GalacTech",
+        name: "OmniReach",
         description: `${plan} plan`,
         theme: { color: "#00C16A" },
         handler: () => pollUntilPlan(plan),

@@ -1,6 +1,6 @@
-# GalacTech - Architecture & Agent Contract
+# OmniReach - Architecture & Agent Contract
 
-Source spec: `E:\Downloads\GalacTech Complete Build Profile.pdf` (feature list = source of truth for *what*; this doc = *how*).
+Source spec: `E:\Downloads\OmniReach Complete Build Profile.pdf` (feature list = source of truth for *what*; this doc = *how*).
 
 ## Decisions (deviations from the PDF, and why)
 | PDF said | We do | Why |

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-/** GalacTech mark: a planet with an orbit ring on a violet→cyan tile. Pure SVG so it is crisp at any size. */
+/** OmniReach mark: a planet with an orbit ring on a violet→cyan tile. Pure SVG so it is crisp at any size. */
 export function LogoMark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 64 64" className={cn("h-7 w-7 shrink-0", className)} aria-hidden>
@@ -16,14 +16,14 @@ export function LogoMark({ className }: { className?: string }) {
 export function Wordmark({ className, light }: { className?: string; light?: boolean }) {
   return (
     <span className={cn("text-lg font-semibold tracking-tight", light ? "text-white" : "text-foreground", className)}>
-      GalacTech
+      OmniReach
     </span>
   );
 }
 
 export function Brand({ href = "/", light, className }: { href?: string; light?: boolean; className?: string }) {
   return (
-    <Link href={href} className={cn("flex items-center gap-2.5", className)} aria-label="GalacTech home">
+    <Link href={href} className={cn("flex items-center gap-2.5", className)} aria-label="OmniReach home">
       <LogoMark />
       <Wordmark light={light} />
     </Link>

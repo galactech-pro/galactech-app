@@ -27,7 +27,7 @@ const PLANS = [
 ];
 
 const FAQ = [
-  { q: "Do I need a WhatsApp Business account?", a: "Yes. GalacTech uses Meta's official WhatsApp Cloud API, so you connect a WhatsApp Business number through your own Meta business account. Meta bills template messages to you directly; we add no per-message markup." },
+  { q: "Do I need a WhatsApp Business account?", a: "Yes. OmniReach uses Meta's official WhatsApp Cloud API, so you connect a WhatsApp Business number through your own Meta business account. Meta bills template messages to you directly; we add no per-message markup." },
   { q: "Will the AI send messages on its own?", a: "Not by default. AI-written replies are saved as drafts that a person approves. Automatic outreach stays off until you switch it on and the contact has recorded consent." },
   { q: "How do you handle opt-outs and consent?", a: "Every send goes through one gate that checks opt-out, Do-Not-Contact, recorded consent for marketing and your calling hours. A STOP reply is honoured immediately." },
   { q: "Where is my data stored?", a: "In a managed PostgreSQL database, isolated per organisation. Channel credentials are encrypted at rest and you can export your contacts at any time." },
@@ -87,7 +87,7 @@ export default function LandingPage() {
               Every channel.<br />One inbox.
             </h1>
             <p className="mx-auto mt-6 max-w-xl text-base text-muted-foreground">
-              GalacTech brings every customer conversation into one place, with a CRM, automations and AI that helps but never sends without your say-so.
+              OmniReach brings every customer conversation into one place, with a CRM, automations and AI that helps but never sends without your say-so.
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Button asChild size="lg"><Link href="/signup">Start your 7-day free trial <ArrowRight /></Link></Button>
@@ -183,7 +183,7 @@ export default function LandingPage() {
       <footer className="border-t">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-8 text-sm text-muted-foreground sm:flex-row">
           <Brand />
-          <span>© {new Date().getFullYear()} GalacTech</span>
+          <span>© {new Date().getFullYear()} OmniReach</span>
           <div className="flex gap-5">
             <Link href="/privacy" className="hover:text-foreground">Privacy</Link>
             <Link href="/terms" className="hover:text-foreground">Terms</Link>

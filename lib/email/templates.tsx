@@ -36,7 +36,7 @@ function Layout({ preview, title, paragraphs, cta }: Shell) {
       <Body style={s.body}>
         <Container style={s.wrap}>
           <Text style={s.brand}>
-            <span style={s.dot}>&#9679;</span>&nbsp; GalacTech
+            <span style={s.dot}>&#9679;</span>&nbsp; OmniReach
           </Text>
           <Section style={s.card}>
             <Heading style={s.h1}>{title}</Heading>
@@ -53,7 +53,7 @@ function Layout({ preview, title, paragraphs, cta }: Shell) {
               </Section>
             ) : null}
           </Section>
-          <Text style={s.foot}>GalacTech &middot; Every channel, one inbox.</Text>
+          <Text style={s.foot}>OmniReach &middot; Every channel, one inbox.</Text>
         </Container>
       </Body>
     </Html>
@@ -68,7 +68,7 @@ export function buildTransactional(kind: TransactionalKind, data: Record<string,
   switch (kind) {
     case "welcome":
       return {
-        subject: "Welcome to GalacTech",
+        subject: "Welcome to OmniReach",
         shell: {
           preview: "Your 7-day free trial has started",
           title: `Welcome, ${name}!`,
@@ -80,7 +80,7 @@ export function buildTransactional(kind: TransactionalKind, data: Record<string,
       };
     case "verify_email":
       return {
-        subject: "Confirm your email for GalacTech",
+        subject: "Confirm your email for OmniReach",
         shell: {
           preview: "Confirm your email address",
           title: "Confirm your email",
@@ -90,7 +90,7 @@ export function buildTransactional(kind: TransactionalKind, data: Record<string,
       };
     case "password_reset":
       return {
-        subject: "Reset your GalacTech password",
+        subject: "Reset your OmniReach password",
         shell: {
           preview: "Reset your password",
           title: "Reset your password",
@@ -100,7 +100,7 @@ export function buildTransactional(kind: TransactionalKind, data: Record<string,
       };
     case "invoice":
       return {
-        subject: `Your GalacTech invoice${data.invoice_id ? ` ${str(data.invoice_id)}` : ""}`,
+        subject: `Your OmniReach invoice${data.invoice_id ? ` ${str(data.invoice_id)}` : ""}`,
         shell: {
           preview: "Payment received - thank you",
           title: "Payment received",
@@ -115,7 +115,7 @@ export function buildTransactional(kind: TransactionalKind, data: Record<string,
       const day = Number(data.day ?? 5);
       const left = Math.max(0, 7 - day);
       return {
-        subject: day >= 7 ? "Your GalacTech trial ends today" : `Your GalacTech trial ends in ${left} day${left === 1 ? "" : "s"}`,
+        subject: day >= 7 ? "Your OmniReach trial ends today" : `Your OmniReach trial ends in ${left} day${left === 1 ? "" : "s"}`,
         shell: {
           preview: "Upgrade to keep your automations running",
           title: day >= 7 ? "Last day of your trial" : "Your trial is ending soon",
@@ -128,7 +128,7 @@ export function buildTransactional(kind: TransactionalKind, data: Record<string,
     }
     case "invite":
       return {
-        subject: `${str(data.inviter, "A teammate")} invited you to ${str(data.org, "GalacTech")}`,
+        subject: `${str(data.inviter, "A teammate")} invited you to ${str(data.org, "OmniReach")}`,
         shell: {
           preview: "You have been invited to join a team",
           title: "You are invited",

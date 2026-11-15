@@ -43,7 +43,7 @@ function LoginForm() {
     <Card>
       <CardHeader>
         <CardTitle className="text-xl">Welcome back</CardTitle>
-        <CardDescription>Sign in to your GalacTech workspace.</CardDescription>
+        <CardDescription>Sign in to your OmniReach workspace.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
@@ -61,7 +61,7 @@ function LoginForm() {
           <SubmitButton loading={isSubmitting}>Sign in</SubmitButton>
         </form>
         <p className="text-center text-sm text-muted-foreground">
-          New to GalacTech?{" "}
+          New to OmniReach?{" "}
           <Link href="/signup" className="font-medium text-foreground underline underline-offset-2 hover:no-underline">Start your free trial</Link>
         </p>
       </CardContent>

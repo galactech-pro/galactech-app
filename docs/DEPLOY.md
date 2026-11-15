@@ -1,4 +1,4 @@
-# Deploying GalacTech to Vercel
+# Deploying OmniReach to Vercel
 
 Architecture: one Next.js app on Vercel (UI + API) -> Supabase Postgres (database only) -> Inngest Cloud (background jobs). No other server.
 
@@ -27,7 +27,7 @@ Architecture: one Next.js app on Vercel (UI + API) -> Supabase Postgres (databas
 | `NEXT_PUBLIC_APP_URL` | `https://app.yourdomain.com` (no trailing slash) | yes |
 | `ENCRYPTION_KEY` | 64 hex chars. **Use a NEW key for production and back it up**; losing it makes stored WhatsApp/Resend tokens unreadable | yes |
 | `RESEND_API_KEY` | from Resend | yes (sign-up verification + password reset cannot send without it) |
-| `EMAIL_FROM` | `GalacTech <hello@mail.yourdomain.com>` | yes |
+| `EMAIL_FROM` | `OmniReach <hello@mail.yourdomain.com>` | yes |
 | `INNGEST_EVENT_KEY`, `INNGEST_SIGNING_KEY` | from Inngest (section 4) | yes |
 | `WA_APP_SECRET`, `WA_WEBHOOK_VERIFY_TOKEN` | Meta app (WhatsApp) | for WhatsApp |
 | `META_APP_SECRET`, `META_WEBHOOK_VERIFY_TOKEN` | Meta app (Instagram/Messenger) | for IG/Messenger |

@@ -34,7 +34,7 @@ export async function ensureRazorpayPlan(p: PaidPlan): Promise<string> {
   const created = await rz.plans.create({
     period: "monthly",
     interval: 1,
-    item: { name: `GalacTech ${p[0].toUpperCase()}${p.slice(1)}`, amount: price * 100, currency: "INR", description: `${p} plan, billed monthly` },
+    item: { name: `OmniReach ${p[0].toUpperCase()}${p.slice(1)}`, amount: price * 100, currency: "INR", description: `${p} plan, billed monthly` },
     notes: { plan: p },
   });
   if (row) await prisma.plan_limits.update({ where: { plan: p }, data: { razorpay_plan_id: created.id } });

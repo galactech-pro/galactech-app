@@ -13,7 +13,7 @@ export const POST = withAuth(
     const org = await prisma.organisations.findUnique({ where: { id: session.org_id }, select: { name: true, business_summary: true } });
     const res = await generateMessage({
       goal: "Answer the customer's question using ONLY the approved facts. If the facts do not contain the answer, list what is missing in needs_info and write no message.",
-      contact: { name: "Customer" },
+      contact: { name: "there" },
       channel: "whatsapp",
       tone: "friendly",
       orgId: session.org_id,
@@ -21,6 +21,7 @@ export const POST = withAuth(
       businessDescription: org?.business_summary ?? undefined,
       approvedOffers: hits.map((h) => h.content.slice(0, 700)),
       conversation: [{ direction: "inbound", text: question }],
+      resolveTags: true,
     });
     const sources = [...new Map(hits.map((h) => [h.url ?? h.title, { title: h.title, url: h.url }])).values()];
     if (res.needs_info.length || !res.message) return ok({ answer: null, reason: "The knowledge base does not contain a clear answer.", sources });

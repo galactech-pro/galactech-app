@@ -143,6 +143,15 @@ async function ingestMessage(inbox: InboxCtx, ev: InboundEvent): Promise<Outcome
 
 
   await emitEvent("message/inbound", { org_id: orgId, contact_id: contact.id, message_id: message.id }, `message-inbound-${message.id}`);
+  // No Inngest configured (local dev / first deploy): answer from the knowledge base inline so auto-reply still works.
+  if (!process.env.INNGEST_EVENT_KEY && !process.env.INNGEST_DEV) {
+    try {
+      const { autoReplyToMessage } = await import("@/lib/knowledge/reply");
+      await autoReplyToMessage(orgId, contact.id, message.id);
+    } catch (e) {
+      console.error("[inbound] inline auto-reply failed", e instanceof Error ? e.message : e);
+    }
+  }
   return "inserted";
 }
 

@@ -15,7 +15,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <p className="mt-1 flex items-center gap-2 text-primary"><span className="h-1.5 w-1.5 rounded-full bg-primary" /> 201 Created · queued to inbox</p>
           </div>
         </div>
-        <p className="relative text-xs text-muted-foreground">© {new Date().getFullYear()} GalacTech</p>
+        <p className="relative text-xs text-muted-foreground">© {new Date().getFullYear()} OmniReach</p>
       </aside>
 
       <div className="flex flex-col items-center justify-center px-4 py-10 sm:px-8">

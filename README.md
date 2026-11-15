@@ -1,4 +1,4 @@
-# GalacTech
+# OmniReach
 
 WhatsApp + Email + AI voice follow-ups, CRM, automations and analytics for Indian SMBs. One Next.js 15 app (UI + API), Postgres (hosted on Supabase), Prisma, Inngest for background jobs.
 See `ARCHITECTURE.md` for design decisions and conventions.

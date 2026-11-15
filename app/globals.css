@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /*
- * GalacTech design tokens, following the Resend DESIGN.md: pure black surfaces, #111 panels, #333 borders,
+ * OmniReach design tokens, following the Resend DESIGN.md: pure black surfaces, #111 panels, #333 borders,
  * green (#00C16A) ONLY for success / send / primary actions, Inter + Geist Mono, radii 4 / 6 / 8.
  * Note: secondary text is #8A8A8A rather than #666 because #666 on black is only 3.7:1 (fails WCAG AA for small text).
  * #666 is kept for borders-on-hover and disabled states.

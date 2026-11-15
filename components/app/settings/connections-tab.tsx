@@ -95,7 +95,7 @@ export function WhatsAppTab({ org }: { org: OrgSettings }) {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Webhook setup</CardTitle>
-          <CardDescription>In Meta &gt; WhatsApp &gt; Configuration, add this callback so replies and delivery receipts reach GalacTech.</CardDescription>
+          <CardDescription>In Meta &gt; WhatsApp &gt; Configuration, add this callback so replies and delivery receipts reach OmniReach.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
           <div className="space-y-1.5">
@@ -155,7 +155,7 @@ export function EmailTab({ org }: { org: OrgSettings }) {
           />
         </div>
         <p className="text-sm text-muted-foreground">
-          Sending domain: verify your domain (SPF, DKIM) inside the Resend dashboard. The sending domain is determined by the one verified on this key and is not configurable from GalacTech.
+          Sending domain: verify your domain (SPF, DKIM) inside the Resend dashboard. The sending domain is determined by the one verified on this key and is not configurable from OmniReach.
         </p>
         <div className="flex flex-wrap gap-2">
           <Button disabled={save.isPending || !key.trim()} onClick={() => save.mutate({ resend_api_key: key.trim() }, { onSuccess: () => setKey("") })}>
