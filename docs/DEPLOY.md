@@ -82,3 +82,20 @@ Never set `NEXT_PUBLIC_*` to a secret: those values are shipped to browsers. The
 - This app lives in its own Vercel project (`galactech-app`) at `app.galactech.pro` (add the CNAME Vercel shows). Set `NEXT_PUBLIC_APP_URL=https://app.galactech.pro` and redeploy after the domain is attached.
 - Email is sent from `hello@galactech.pro` (the domain is verified in Resend).
 
+
+## Inbound email, Telegram personal chats and the knowledge base
+
+**Inbound email (customer replies arrive in the Inbox)**
+1. In Resend open Domains, then Receiving. Add the MX records it shows for a SUBDOMAIN such as `in.yourdomain.com`, so your normal mail keeps working. For a zero-DNS test use the free `<id>.resend.app` address Resend gives you.
+2. Set `INBOUND_EMAIL_DOMAIN` to that domain (no `@`).
+3. In Resend add a webhook for the event `email.received` pointing to `https://YOUR-APP/api/webhooks/email`, copy its signing secret into `RESEND_WEBHOOK_SECRET`, and redeploy.
+4. Channels page, Email card: copy your receiving address. Outgoing emails already carry it as Reply-To, so replies land in the Inbox. Forward your support address to it to receive everything.
+
+**Telegram personal account (Telegram Business, needs Telegram Premium)**
+1. In @BotFather: your bot, Bot Settings, Business Mode, enable.
+2. In Telegram: Settings, Business, Chatbots, add your bot and choose which chats it may answer.
+3. Reconnect the bot on the Channels page once so the webhook subscribes to business updates. Messages sent to your personal account then show up in the Inbox and are answered through the same connection.
+
+**Knowledge base:** Knowledge page. Websites are re-read automatically (hourly check, per-source interval) through the sitemap. Private information needs an emailed 6-digit code to add or remove, and replies that use it always wait for approval.
+
+**Background jobs:** set `INNGEST_EVENT_KEY` and `INNGEST_SIGNING_KEY` on the SAME Vercel project as the app, redeploy, then in Inngest click Sync app with `https://YOUR-APP/api/inngest`.
