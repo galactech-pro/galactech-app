@@ -26,7 +26,7 @@ export function SettingsView() {
           <Skeleton className="h-64 w-full" />
         </div>
       ) : q.isError || !q.data ? (
-        <div className="rounded-xl border border-destructive/30 p-6 text-sm">
+        <div className="rounded-lg border border-destructive/30 p-6 text-sm">
           <p className="text-destructive">{(q.error as Error | null)?.message ?? "Could not load settings."}</p>
           <Button className="mt-3" variant="outline" size="sm" onClick={() => q.refetch()}>Retry</Button>
         </div>

@@ -79,7 +79,7 @@ export function DangerTab() {
           <p className="font-medium">Delete organisation</p>
           <p className="text-muted-foreground">
             Self-service organisation deletion is not available yet. Export your data from the Data export tab (or{" "}
-            <Link href="/billing" className="text-primary hover:underline">cancel your plan</Link>) and contact support to have the workspace removed.
+            <Link href="/billing" className="text-foreground underline underline-offset-2 hover:no-underline">cancel your plan</Link>) and contact support to have the workspace removed.
           </p>
         </div>
       </CardContent>

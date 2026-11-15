@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db";
+﻿import { prisma } from "@/lib/db";
 import { sendEvent } from "@/lib/inngest";
 import { scoreLead } from "./index";
 

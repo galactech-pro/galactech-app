@@ -89,13 +89,13 @@ export function AutomationsList() {
       />
 
       {list.isError ? (
-        <div className="rounded-xl border p-6 text-center text-sm">
+        <div className="rounded-lg border p-6 text-center text-sm">
           <p className="text-destructive">{(list.error as Error).message}</p>
           <Button className="mt-3" variant="outline" onClick={() => list.refetch()}>Retry</Button>
         </div>
       ) : list.isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {[0, 1, 2].map((i) => <Skeleton key={i} className="h-36 rounded-xl" />)}
+          {[0, 1, 2].map((i) => <Skeleton key={i} className="h-36 rounded-lg" />)}
         </div>
       ) : list.data && list.data.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -131,7 +131,7 @@ export function AutomationsList() {
           ))}
         </div>
       ) : (
-        <div className="rounded-xl border border-dashed p-10 text-center">
+        <div className="rounded-lg border border-dashed p-10 text-center">
           <Workflow className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
           <p className="font-medium">No automations yet</p>
           <p className="text-sm text-muted-foreground">Start from a template below or build one from scratch.</p>
@@ -144,7 +144,7 @@ export function AutomationsList() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {templates.isLoading
-            ? [0, 1, 2].map((i) => <Skeleton key={i} className="h-32 rounded-xl" />)
+            ? [0, 1, 2].map((i) => <Skeleton key={i} className="h-32 rounded-lg" />)
             : templates.data?.map((t) => (
                 <Card key={t.key}>
                   <CardContent className="flex h-full flex-col gap-2 p-4">

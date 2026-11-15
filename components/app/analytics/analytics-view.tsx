@@ -19,8 +19,8 @@ type Data = AnalyticsPayload & { insights: string | null };
 type Range = "today" | "7d" | "30d" | "90d" | "custom";
 
 // Categorical series colours (fixed order; text stays in ink tokens, colour only on marks).
-const C1 = "#2563eb";
-const C2 = "#0d9488";
+const C1 = "#00C16A";
+const C2 = "#CCCCCC";
 const AXIS = "hsl(var(--muted-foreground))";
 
 const inr = (n: number) => `₹${n.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
@@ -165,9 +165,9 @@ export function AnalyticsView() {
       </div>
 
       {!customReady ? (
-        <p className="rounded-xl border p-6 text-center text-sm text-muted-foreground">Choose a valid start and end date.</p>
+        <p className="rounded-lg border p-6 text-center text-sm text-muted-foreground">Choose a valid start and end date.</p>
       ) : q.isError ? (
-        <div className="rounded-xl border p-6 text-center text-sm">
+        <div className="rounded-lg border p-6 text-center text-sm">
           <p className="text-destructive">{(q.error as Error).message}</p>
           <Button className="mt-3" variant="outline" onClick={() => q.refetch()}>
             Retry

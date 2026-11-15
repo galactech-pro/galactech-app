@@ -228,7 +228,7 @@ function BuilderInner({ id }: { id?: string }) {
   if (id && existing.isLoading) return <Skeleton className="h-[60vh] w-full" />;
   if (id && existing.isError) {
     return (
-      <div className="rounded-xl border p-6 text-center text-sm">
+      <div className="rounded-lg border p-6 text-center text-sm">
         <p className="text-destructive">{(existing.error as Error).message}</p>
         <Button asChild variant="outline" className="mt-3"><Link href="/automations">Back to automations</Link></Button>
       </div>
@@ -267,7 +267,7 @@ function BuilderInner({ id }: { id?: string }) {
         </p>
       ) : null}
 
-      <div className="flex h-[calc(100vh-12rem)] min-h-[520px] flex-col overflow-hidden rounded-xl border bg-card md:flex-row">
+      <div className="flex h-[calc(100vh-12rem)] min-h-[520px] flex-col overflow-hidden rounded-lg border bg-card md:flex-row">
         <aside className="flex shrink-0 gap-2 border-b p-2 md:w-40 md:flex-col md:border-b-0 md:border-r md:p-3">
           <p className="hidden text-xs font-medium text-muted-foreground md:block">Drag or click to add</p>
           {PALETTE.map((p) => (

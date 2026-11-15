@@ -17,7 +17,7 @@ export const StatsContext = React.createContext<Record<string, StepStat> | null>
 function Shell({ id, selected, icon, title, subtitle, tone, children }: { id: string; selected: boolean; icon: React.ReactNode; title: string; subtitle?: string; tone: string; children?: React.ReactNode }) {
   const stats = React.useContext(StatsContext)?.[id];
   return (
-    <div className={cn("w-56 rounded-xl border bg-card text-card-foreground shadow-sm", selected && "ring-2 ring-primary")}>
+    <div className={cn("w-56 rounded-lg border bg-card text-card-foreground shadow-sm", selected && "ring-2 ring-primary")}>
       <div className="flex items-start gap-2 p-3">
         <span className={cn("flex h-7 w-7 shrink-0 items-center justify-center rounded-md", tone)}>{icon}</span>
         <div className="min-w-0">

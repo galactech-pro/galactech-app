@@ -85,7 +85,7 @@ export function InboxView() {
   });
 
   return (
-    <div className="-m-4 flex h-[calc(100vh-4rem)] overflow-hidden border-y bg-card md:m-0 md:rounded-xl md:border">
+    <div className="-m-4 flex h-[calc(100vh-4rem)] overflow-hidden border-y bg-card md:m-0 md:rounded-lg md:border">
       <aside className={cn("flex w-full flex-col border-r md:w-80 lg:w-96 md:flex", selected && "hidden")}>
         <div className="space-y-2 border-b p-3">
           <div className="flex items-center justify-between">
@@ -139,7 +139,7 @@ export function InboxView() {
               <p className="p-8 text-center text-sm text-muted-foreground">No conversations match your filters.</p>
             ) : (
               <div className="flex flex-col items-center gap-2 px-6 py-12 text-center">
-                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-primary"><InboxIcon className="h-6 w-6" /></span>
+                <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-secondary text-foreground"><InboxIcon className="h-6 w-6" /></span>
                 <p className="font-display text-sm font-semibold">Your inbox is empty</p>
                 <p className="text-sm text-muted-foreground">Connect a channel and customer messages will appear here.</p>
                 <Button asChild size="sm" variant="brand" className="mt-2"><Link href="/channels">Connect a channel</Link></Button>
@@ -181,7 +181,7 @@ export function InboxView() {
           <ThreadPane key={selected.conversationId ?? selected.contactId} target={selected} onBack={() => setSelected(null)} />
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center text-sm text-muted-foreground">
-            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent text-primary"><MessagesSquare className="h-7 w-7" /></span>
+            <span className="flex h-14 w-14 items-center justify-center rounded-lg bg-secondary text-foreground"><MessagesSquare className="h-7 w-7" /></span>
             Select a conversation to start replying.
           </div>
         )}
@@ -342,7 +342,7 @@ function ThreadPane({ target, onBack }: { target: { conversationId?: string; con
           <div key={m.id} className={cn("flex", m.direction === "outbound" ? "justify-end" : "justify-start")}>
             <div
               className={cn(
-                "max-w-[80%] whitespace-pre-wrap rounded-2xl px-3 py-2 text-sm shadow-sm",
+                "max-w-[80%] whitespace-pre-wrap rounded-lg px-3 py-2 text-sm shadow-sm",
                 m.direction === "outbound" ? "rounded-tr-sm bg-primary text-primary-foreground" : "rounded-tl-sm bg-background"
               )}
             >

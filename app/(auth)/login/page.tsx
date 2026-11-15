@@ -55,14 +55,14 @@ function LoginForm() {
             type="password"
             autoComplete="current-password"
             error={errors.password?.message}
-            hint={<Link href="/forgot-password" className="text-xs text-primary hover:underline">Forgot password?</Link>}
+            hint={<Link href="/forgot-password" className="text-xs text-foreground underline underline-offset-2 hover:no-underline">Forgot password?</Link>}
             {...register("password")}
           />
           <SubmitButton loading={isSubmitting}>Sign in</SubmitButton>
         </form>
         <p className="text-center text-sm text-muted-foreground">
           New to GalacTech?{" "}
-          <Link href="/signup" className="font-medium text-primary hover:underline">Start your free trial</Link>
+          <Link href="/signup" className="font-medium text-foreground underline underline-offset-2 hover:no-underline">Start your free trial</Link>
         </p>
       </CardContent>
     </Card>

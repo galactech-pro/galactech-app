@@ -52,7 +52,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
     <nav aria-label="Main" className="flex flex-col gap-5 px-3 py-4">
       {NAV_GROUPS.map((g) => (
         <div key={g.label}>
-          <p className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/50">{g.label}</p>
+          <p className="mb-1.5 px-3 text-[11px] uppercase tracking-wider text-sidebar-foreground/60">{g.label}</p>
           <div className="flex flex-col gap-0.5">
             {g.items.map(({ href, label, icon: Icon }) => {
               const active = pathname === href || pathname.startsWith(href + "/");
@@ -63,12 +63,12 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
                   onClick={onNavigate}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    active ? "bg-sidebar-muted text-white" : "text-sidebar-foreground hover:bg-sidebar-muted/60 hover:text-white"
+                    "group relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    active ? "bg-sidebar-muted text-white" : "text-sidebar-foreground hover:bg-sidebar-muted hover:text-white"
                   )}
                 >
-                  {active ? <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-brand" /> : null}
-                  <Icon className={cn("h-4 w-4 shrink-0", active ? "text-cyan" : "text-sidebar-foreground/70 group-hover:text-white")} />
+                  {active ? <span className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 bg-white" /> : null}
+                  <Icon className={cn("h-4 w-4 shrink-0", active ? "text-white" : "text-sidebar-foreground group-hover:text-white")} />
                   {label}
                 </Link>
               );
@@ -89,10 +89,10 @@ export function Sidebar() {
       <div className="flex-1 overflow-y-auto">
         <SidebarNav />
       </div>
-      <div className="m-3 rounded-xl border border-sidebar-border bg-sidebar-muted/60 p-3 text-xs text-sidebar-foreground">
+      <div className="m-3 rounded-lg border border-sidebar-border bg-sidebar-muted/60 p-3 text-xs text-sidebar-foreground">
         <p className="font-semibold text-white">Need a hand?</p>
         <p className="mt-0.5 leading-relaxed">Connect a channel first, then import contacts.</p>
-        <Link href="/channels" className="mt-2 inline-block font-medium text-cyan hover:underline">Connect channels →</Link>
+        <Link href="/channels" className="mt-2 inline-block text-white underline-offset-2 hover:underline">Connect channels →</Link>
       </div>
     </aside>
   );

@@ -28,7 +28,7 @@ function Verify() {
   return (
     <Card>
       <CardHeader className="items-center text-center">
-        <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-accent text-primary">
+        <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-foreground">
           <MailCheck className="h-6 w-6" />
         </div>
         <CardTitle className="text-xl">Check your inbox</CardTitle>
@@ -42,8 +42,8 @@ function Verify() {
           Resend email
         </Button>
         <p className="text-center text-sm text-muted-foreground">
-          Wrong address? <Link href="/signup" className="text-primary hover:underline">Start over</Link> or{" "}
-          <Link href="/login" className="text-primary hover:underline">sign in</Link>.
+          Wrong address? <Link href="/signup" className="text-foreground underline underline-offset-2 hover:no-underline">Start over</Link> or{" "}
+          <Link href="/login" className="text-foreground underline underline-offset-2 hover:no-underline">sign in</Link>.
         </p>
       </CardContent>
     </Card>

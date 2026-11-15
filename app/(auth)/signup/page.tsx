@@ -68,7 +68,7 @@ function SignupForm() {
         </form>
         <p className="text-center text-sm text-muted-foreground">
           Already have an account?{" "}
-          <Link href="/login" className="font-medium text-primary hover:underline">Sign in</Link>
+          <Link href="/login" className="font-medium text-foreground underline underline-offset-2 hover:no-underline">Sign in</Link>
         </p>
       </CardContent>
     </Card>

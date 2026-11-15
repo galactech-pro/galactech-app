@@ -10,7 +10,7 @@ export function LegalPage({ title, updated, sections }: { title: string; updated
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground"><Zap className="h-4 w-4" /></span>
             GalacTech
           </Link>
-          <Link href="/login" className="text-sm text-primary hover:underline">Sign in</Link>
+          <Link href="/login" className="text-sm text-foreground underline underline-offset-2 hover:no-underline">Sign in</Link>
         </div>
       </header>
       <main className="mx-auto max-w-3xl px-4 py-12">

@@ -1,10 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Space_Grotesk } from "next/font/google";
+import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/app/providers";
 
 const sans = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
-const display = Space_Grotesk({ subsets: ["latin"], variable: "--font-display", display: "swap" });
+const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap" });
 
 const SITE = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
@@ -16,11 +16,11 @@ export const metadata: Metadata = {
   openGraph: { title: "GalacTech", description: "Every channel. One inbox. Zero missed leads.", siteName: "GalacTech", type: "website" },
 };
 
-export const viewport: Viewport = { themeColor: "#7c5cff", width: "device-width", initialScale: 1 };
+export const viewport: Viewport = { themeColor: "#000000", width: "device-width", initialScale: 1 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${sans.variable} ${display.variable}`}>
+    <html lang="en" className={`${sans.variable} ${mono.variable}`}>
       <body>
         <Providers>{children}</Providers>
       </body>

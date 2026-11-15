@@ -126,7 +126,7 @@ export function BillingView() {
         subscription_id: r.subscription_id,
         name: "GalacTech",
         description: `${plan} plan`,
-        theme: { color: "#4f46e5" },
+        theme: { color: "#00C16A" },
         handler: () => pollUntilPlan(plan),
         modal: { ondismiss: () => undefined },
       });
@@ -158,7 +158,7 @@ export function BillingView() {
     return (
       <div>
         <PageHeader title="Billing" />
-        <div className="rounded-xl border border-destructive/30 p-6 text-sm">
+        <div className="rounded-lg border border-destructive/30 p-6 text-sm">
           <p className="text-destructive">{(q.error as Error | null)?.message ?? "Could not load billing."}</p>
           <Button className="mt-3" variant="outline" size="sm" onClick={() => q.refetch()}>Retry</Button>
         </div>

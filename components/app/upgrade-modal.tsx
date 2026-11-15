@@ -42,7 +42,7 @@ export function UpgradeModal({ open, onClose, info }: { open: boolean; onClose: 
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-accent text-primary">
+          <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-foreground">
             <Sparkles className="h-5 w-5" />
           </div>
           <DialogTitle>{trial ? "Your free trial has ended" : "You've hit your plan limit"}</DialogTitle>

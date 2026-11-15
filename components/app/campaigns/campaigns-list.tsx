@@ -103,14 +103,14 @@ export function CampaignsList() {
           ))}
         </div>
       ) : q.isError ? (
-        <div className="rounded-xl border border-destructive/30 p-6 text-center text-sm">
+        <div className="rounded-lg border border-destructive/30 p-6 text-center text-sm">
           <p className="mb-3 text-destructive">{errMsg(q.error)}</p>
           <Button variant="outline" size="sm" onClick={() => q.refetch()}>
             Retry
           </Button>
         </div>
       ) : items.length === 0 ? (
-        <div className="rounded-xl border border-dashed p-12 text-center">
+        <div className="rounded-lg border border-dashed p-12 text-center">
           <p className="mb-4 text-sm text-muted-foreground">No campaigns yet. Create your first one to reach your contacts.</p>
           <Button asChild>
             <Link href="/campaigns/new">

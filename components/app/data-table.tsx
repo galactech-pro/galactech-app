@@ -32,7 +32,7 @@ export function DataTable<T>({
   className?: string;
 }) {
   return (
-    <div className={cn("rounded-xl border bg-card", className)}>
+    <div className={cn("rounded-lg border bg-card", className)}>
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">

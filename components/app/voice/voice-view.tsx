@@ -140,7 +140,7 @@ export function VoiceView() {
       </div>
 
       {q.isError ? (
-        <div className="rounded-xl border p-6 text-center text-sm">
+        <div className="rounded-lg border p-6 text-center text-sm">
           <p className="text-destructive">{(q.error as Error).message}</p>
           <Button className="mt-3" variant="outline" onClick={() => q.refetch()}>Retry</Button>
         </div>

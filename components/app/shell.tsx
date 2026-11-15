@@ -58,7 +58,7 @@ export function Shell({ orgName, userName, email, plan, trialEndsAt, emailVerifi
   if (pathname.startsWith("/onboarding")) {
     return (
       <UpgradeProvider>
-        <div className="min-h-screen bg-muted/40">{children}</div>
+        <div className="min-h-screen bg-black">{children}</div>
       </UpgradeProvider>
     );
   }
@@ -68,7 +68,7 @@ export function Shell({ orgName, userName, email, plan, trialEndsAt, emailVerifi
 
   return (
     <UpgradeProvider>
-      <div className="flex h-screen overflow-hidden bg-muted/40">
+      <div className="flex h-screen overflow-hidden bg-black">
         <Sidebar />
         <Sheet open={drawer} onOpenChange={setDrawer}>
           <SheetContent side="left" className="border-sidebar-border bg-sidebar p-0">
@@ -108,13 +108,13 @@ export function Shell({ orgName, userName, email, plan, trialEndsAt, emailVerifi
             </div>
           ) : null}
 
-          <header className="flex h-16 shrink-0 items-center justify-between border-b bg-card/80 px-4 backdrop-blur sm:px-6">
+          <header className="flex h-16 shrink-0 items-center justify-between border-b bg-black/80 px-4 backdrop-blur sm:px-6">
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setDrawer(true)} aria-label="Open menu">
                 <Menu className="h-5 w-5" />
               </Button>
-              <span className="truncate font-display text-sm font-semibold">{orgName}</span>
-              <span className="hidden rounded-full bg-brand px-2.5 py-0.5 text-[11px] font-semibold capitalize text-white sm:inline">
+              <span className="truncate text-sm font-semibold">{orgName}</span>
+              <span className="hidden rounded-sm border px-2 py-0.5 text-[11px] capitalize text-muted-foreground sm:inline">
                 {plan}
               </span>
             </div>

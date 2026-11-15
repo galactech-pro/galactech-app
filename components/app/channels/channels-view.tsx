@@ -150,7 +150,7 @@ export function ChannelsView() {
     <div>
       <PageHeader title="Channels" description="Connect the places your customers message you. Connecting and disconnecting is admin-only." />
       {q.isError ? (
-        <div className="rounded-xl border border-destructive/30 p-6 text-sm">
+        <div className="rounded-lg border border-destructive/30 p-6 text-sm">
           <p className="text-destructive">{(q.error as Error).message}</p>
           <Button className="mt-3" variant="outline" size="sm" onClick={() => q.refetch()}>Retry</Button>
         </div>

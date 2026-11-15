@@ -190,7 +190,7 @@ export function CampaignWizard() {
                     key={c.id}
                     type="button"
                     onClick={() => setChannel(c.id)}
-                    className={cn("rounded-xl border p-4 text-left transition-colors hover:bg-muted/50", channel === c.id && "border-primary bg-accent/50 ring-1 ring-primary")}
+                    className={cn("rounded-lg border p-4 text-left transition-colors hover:bg-muted/50", channel === c.id && "border-primary bg-accent/50 ring-1 ring-primary")}
                   >
                     <ChannelIcon channel={c.id} className="mb-2 h-6 w-6 text-primary" />
                     <div className="font-medium">{channelLabel(c.id)}</div>

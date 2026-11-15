@@ -290,7 +290,7 @@ export function ContactsView() {
       </div>
 
       {showFilters && (
-        <div className="mb-4 grid gap-3 rounded-xl border bg-card p-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mb-4 grid gap-3 rounded-lg border bg-card p-4 sm:grid-cols-2 lg:grid-cols-3">
           <div className="space-y-1.5">
             <Label>Tags (comma separated)</Label>
             <Input value={filters.tags} onChange={(e) => setFilters((f) => ({ ...f, tags: e.target.value }))} placeholder="vip, webinar" />
@@ -380,7 +380,7 @@ export function ContactsView() {
       )}
 
       {list.isError ? (
-        <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-center text-sm">
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-6 text-center text-sm">
           <p className="mb-3 text-destructive">{errMsg(list.error)}</p>
           <Button variant="outline" size="sm" onClick={() => list.refetch()}>
             Retry

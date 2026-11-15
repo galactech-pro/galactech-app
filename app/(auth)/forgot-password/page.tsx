@@ -41,7 +41,7 @@ export default function ForgotPasswordPage() {
           <SubmitButton loading={isSubmitting}>Send reset link</SubmitButton>
         </form>
         <p className="text-center text-sm text-muted-foreground">
-          <Link href="/login" className="text-primary hover:underline">Back to sign in</Link>
+          <Link href="/login" className="text-foreground underline underline-offset-2 hover:no-underline">Back to sign in</Link>
         </p>
       </CardContent>
     </Card>

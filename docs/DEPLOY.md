@@ -1,4 +1,4 @@
-# Deploying GalacTech to Vercel
+﻿# Deploying GalacTech to Vercel
 
 Architecture: one Next.js app on Vercel (UI + API) -> Supabase Postgres (database only) -> Inngest Cloud (background jobs). No other server.
 
@@ -16,7 +16,7 @@ Architecture: one Next.js app on Vercel (UI + API) -> Supabase Postgres (databas
 2. Re-run `pnpm db:rls` after **every** future `db:push` (new tables need row security).
 3. Rotate the database password if it was ever pasted anywhere (Supabase -> Project Settings -> Database).
 
-## 2. Create the Vercel project
+## 2. Create the Vercel project (a NEW, separate project)
 1. Vercel -> Add New -> Project -> import the repo. Framework: Next.js (auto). `vercel.json` already sets region `bom1` (Mumbai, next to Supabase `ap-south-1`) and function timeouts.
 2. Add the environment variables below (Production, and Preview if you use previews), then deploy.
 
@@ -76,3 +76,9 @@ Never set `NEXT_PUBLIC_*` to a secret: those values are shipped to browsers. The
 - **Client IP** for rate limits comes from `x-vercel-forwarded-for` on Vercel. If you move off Vercel, set `CLIENT_IP_HEADER` to a header your proxy sets itself.
 - **Email verification** is recorded but not yet required to use the app. Decide whether to gate sending until verified.
 - **Backups:** Supabase free plans have no point-in-time recovery. Enable backups on a paid plan before real customer data arrives.
+
+## Domain layout for galactech.pro
+- galactech.pro / www is the existing company website. Do NOT point it at this app, and never deploy this repo into that Vercel project.
+- This app lives in its own Vercel project (`galactech-app`) at `app.galactech.pro` (add the CNAME Vercel shows). Set `NEXT_PUBLIC_APP_URL=https://app.galactech.pro` and redeploy after the domain is attached.
+- Email is sent from `hello@galactech.pro` (the domain is verified in Resend).
+

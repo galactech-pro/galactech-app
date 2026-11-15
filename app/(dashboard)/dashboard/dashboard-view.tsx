@@ -44,7 +44,7 @@ function StatCard({
       <CardContent className="p-5">
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">{label}</p>
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-primary">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary text-foreground">
             <Icon className="h-4 w-4" />
           </span>
         </div>
@@ -142,7 +142,7 @@ export function DashboardView({ name }: { name: string | null }) {
                   return (
                     <li key={a.id}>
                       <Link href={a.href} className="flex items-start gap-3 rounded-md py-3 hover:bg-muted/50">
-                        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-primary">
+                        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-foreground">
                           <Icon className="h-4 w-4" />
                         </span>
                         <span className="min-w-0 flex-1">
@@ -169,10 +169,10 @@ export function DashboardView({ name }: { name: string | null }) {
         </Card>
 
         <div className="space-y-4">
-          <Card className="border-primary/30 bg-gradient-to-br from-accent/70 to-card">
+          <Card className="bg-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <Sparkles className="h-4 w-4 text-primary" /> AI insights
+                <Sparkles className="h-4 w-4 text-muted-foreground" /> AI insights
               </CardTitle>
               <CardDescription>Based on your live pipeline.</CardDescription>
             </CardHeader>

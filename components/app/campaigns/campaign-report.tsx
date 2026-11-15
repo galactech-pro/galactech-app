@@ -92,7 +92,7 @@ export function CampaignReport({ id }: { id: string }) {
   }
   if (q.isError || !q.data) {
     return (
-      <div className="rounded-xl border p-8 text-center">
+      <div className="rounded-lg border p-8 text-center">
         <p className="mb-3 text-sm text-destructive">{errMsg(q.error)}</p>
         <Button asChild variant="outline">
           <Link href="/campaigns">Back to campaigns</Link>
