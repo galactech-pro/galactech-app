@@ -1,0 +1,2 @@
+# GalacTech
+Read `ARCHITECTURE.md` first: stack decisions, conventions (org_id scoping, `withAuth`, `{success,data,error}`, limits, Inngest) and service-library contracts. Use pnpm; run shell from PowerShell (bash can't find node). Auth is our own (lib/auth.ts) — do NOT reintroduce Supabase Auth/Storage; Supabase is only the Postgres host. Never add `inngest/index.ts` (shadows the npm package); register functions in `inngest/functions.ts`. Route files may only export HTTP handlers. Verify with `pnpm exec tsc --noEmit` and `next build`.

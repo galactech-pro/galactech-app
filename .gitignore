@@ -1,0 +1,39 @@
+# dependencies
+node_modules
+.pnpm-store
+
+# build output
+.next
+.next-*
+dist
+out
+*.tsbuildinfo
+
+# secrets: NEVER commit. Use .env.example as the template.
+.env
+.env.local
+.env.*.local
+.env.production
+*.pem
+
+# logs and local tooling
+*.log
+.smoke-dev.log
+.dev.log
+.build.log
+.turbo
+.vercel
+.claude/settings.local.json
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea
+.vscode/*
+!.vscode/extensions.json
+
+# tests / coverage
+coverage
+playwright-report
+test-results
+
